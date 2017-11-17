@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.alt.json",
+  "include": ["src"],
+  "compilerOptions": {
+    "outDir": "./build",
+    "declaration": true,
+    "strictNullChecks": true
+  }
+}

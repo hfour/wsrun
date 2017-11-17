@@ -1,0 +1,106 @@
+/**
+ * Remove me.
+ */
+
+/*tslint:disable*/
+
+import { PkgJson, Dict } from './workspace';
+
+const cacheMap = new WeakMap();
+
+function cached(_obj: any, key: string, desc: PropertyDescriptor) {
+  const getter = desc.get;
+
+  desc.get = function() {
+    let cache = cacheMap.get(this);
+    if (cache == null) cacheMap.set(this, (cache = {}));
+
+    let prop = cache[key];
+    if (prop == null) {
+      prop = cache[key] = { computing: true };
+      try {
+        prop.val = getter && getter.call(this);
+      } finally {
+        prop.computing = false;
+      }
+    } else if (prop.computing) {
+      throw new Error('Cycle detected!');
+    }
+    return prop.val;
+  };
+}
+
+class PackageMap {
+  map: Map<string, Package>;
+  constructor(jsons: PkgJson[]) {
+    this.map = new Map();
+    jsons.forEach(json => {
+      this.map.set(json.name, new Package(json, this));
+    });
+  }
+
+  @cached
+  get topoMap() {
+    return Array.from(this.map.keys()).map(k => {
+      const val = this.map.get(k);
+      if (!val) {
+        throw Error(`Not found: ${k}`);
+      }
+      return {
+        name: k,
+        order: val.order,
+        cycle: val.cycle,
+      };
+    });
+  }
+}
+
+class Package {
+  depNames: string[];
+  list: PackageMap;
+  cycle: boolean;
+
+  constructor(json: PkgJson, list: PackageMap) {
+    this.depNames = (json.dependencies && Object.keys(json.dependencies)) || [];
+    this.list = list;
+    this.cycle = false;
+  }
+
+  @cached
+  get dependencies() {
+    return this.depNames.map(n => this.list.map.get(n)).filter(p => p);
+  }
+
+  @cached
+  get order() {
+    if (this.dependencies.length === 0) return 1;
+    return (
+      this.dependencies.reduce((acc, el) => {
+        let order = 0;
+        try {
+          order = (el as any).order; // not sure that throws here
+        } catch (e) {
+          this.cycle = true;
+        }
+        return Math.max(acc, order);
+      }, 0) + 1
+    );
+  }
+}
+
+export function buildOrder(pkgs: PkgJson[]) {
+  const orders = [];
+  while (pkgs.length > 0) {
+    const newStuff = new PackageMap(pkgs).topoMap;
+    orders.push(newStuff);
+    const cycled = newStuff.reduce(
+      (acc, el) => {
+        acc[el.name] = el.cycle;
+        return acc;
+      },
+      {} as Dict<boolean>,
+    );
+    pkgs = pkgs.filter(p => cycled[p.name]);
+  }
+  return orders;
+}
