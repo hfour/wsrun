@@ -76,9 +76,14 @@ export class Package {
 
   @cached
   get deepDependencies(): string[] {
-    let deeper = uniq(flatMap(this.dependencies, d => d.deepDependencies))
-    deeper.push(this.name)
-    return deeper;
+    try {
+      let deeper = uniq(flatMap(this.dependencies, d => d.deepDependencies))
+      deeper.push(this.name)
+      return deeper;
+    } catch (e) {
+      // already computing this pkg's deepDeps
+      return []
+    }
   }
 
   @cached
@@ -115,6 +120,9 @@ export function buildOrder(pkgs: PkgJson[]) {
   return orders;
 }
 
-export function pkgMap(pkgs: PkgJson[]) {
-  return new PackageMap(pkgs)
+export function subsetBuildOrder(pkgs: PkgJson[], subset: string[]) {
+  let pm = new PackageMap(pkgs)
+  let subsetDeps = flatMap(subset, p => pm.map.get(p)!.deepDependencies)
+  let subsetJsons = pkgs.filter(p => subsetDeps.indexOf(p.name))
+  return buildOrder(subsetJsons)[0]
 }

@@ -1,6 +1,6 @@
 import 'jest';
 
-import { buildOrder, pkgMap } from './topomap';
+import { buildOrder, subsetBuildOrder } from './topomap';
 
 let pkgs = [
   {
@@ -23,14 +23,23 @@ let pkgs = [
   {
     name: 'h4-zip',
     version: '1.0.0',
-    dependencies: { },
+    dependencies: {}
   }
 ];
 
 describe('topomap', () => {
-  it('should have deepDeps', () => {
-    let pm = pkgMap(pkgs);
-    let p = pm.map.get('backend')!
-    console.log(p.deepDependencies)
+  it('should create full build order', () => {
+    let fbo = buildOrder(pkgs)[0].sort((p1, p2) => p1.order - p2.order);
+
+    expect(fbo).toMatchObject([
+      { name: 'h4-zip', order: 1 },
+      { name: 'h4-format', order: 2 },
+      { name: 'backend', order: 3 }
+    ]);
+  });
+  it('should create subset build order', () => {
+    let sbo = subsetBuildOrder(pkgs, ['backend']).sort((p1, p2) => p1.order - p2.order);
+
+    expect(sbo).toMatchObject([{ name: 'h4-format', order: 1 }, { name: 'backend', order: 2 }]);
   });
 });
