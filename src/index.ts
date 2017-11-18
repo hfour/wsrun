@@ -4,63 +4,61 @@
  * Tool for running command in yarn workspaces.
  */
 
-import * as Promise from 'bluebird';
-import { argv } from 'yargs';
-import * as _ from 'lodash';
+import * as Promise from 'bluebird'
+import { argv } from 'yargs'
+import * as _ from 'lodash'
 
-import { RunAll } from './parallelshell';
-import { listPkgs } from './workspace';
-import { buildOrder } from './topomap';
+import { RunAll } from './parallelshell'
+import { listPkgs } from './workspace'
+import { buildOrder } from './topomap'
 
-/*tslint:disable*/
+const bin = argv.bin || 'yarn'
 
-const bin = argv.bin || 'yarn';
-
-let mode: string;
+let mode: string
 if (argv.smart) {
-  mode = 'smart';
+  mode = 'smart'
 } else if (argv.serial) {
-  mode = 'serial';
+  mode = 'serial'
 } else {
-  mode = 'parallel';
+  mode = 'parallel'
 }
 
-const cmd = argv._[0];
+const cmd = argv._[0]
 // const pkgName = argv._[1];
 
 if (!cmd) {
-  throw new Error('cmd is undefined');
+  throw new Error('cmd is undefined')
 }
 
-type BuildInstr = { name: string; order: number; cycle: boolean };
+type BuildInstr = { name: string; order: number; cycle: boolean }
 
 function genCmd(bi: BuildInstr) {
-  return `cd ./packages/${bi.name} && ${bin} ${cmd}`;
+  return `cd ./packages/${bi.name} && ${bin} ${cmd}`
 }
 
-const pkgJsons = _.map(listPkgs('./packages'), pkg => pkg.json);
-const sortedInstrs = _.sortBy(buildOrder(pkgJsons)[0], 'order');
+const pkgJsons = _.map(listPkgs('./packages'), pkg => pkg.json)
+const sortedInstrs = _.sortBy(buildOrder(pkgJsons)[0], 'order')
 
 if (mode === 'smart' || mode === 'serial') {
-  const runMode = mode === 'smart' ? 'parallel' : 'serial';
+  const runMode = mode === 'smart' ? 'parallel' : 'serial'
   // generate stages
-  const stages = [];
-  let i = 1;
+  const stages = []
+  let i = 1
   while (true) {
-    const stage = sortedInstrs.filter(pkg => pkg.order === i);
-    if (!stage.length) break;
-    stages.push(stage);
-    i++;
+    const stage = sortedInstrs.filter(pkg => pkg.order === i)
+    if (!stage.length) break
+    stages.push(stage)
+    i++
   }
   console.log(stages)
   // run in batches
   Promise.mapSeries(stages, stg => {
-    console.log('----- RUNNING A STAGE -----');
-    console.log("Packages in stage: ", stg.map(p => p.name))
-    const cmds = stg.map(genCmd);
-    return new RunAll(cmds, runMode).finishedAll;
-  });
+    console.log('----- RUNNING A STAGE -----')
+    console.log('Packages in stage: ', stg.map(p => p.name))
+    const cmds = stg.map(genCmd)
+    return new RunAll(cmds, runMode).finishedAll
+  })
 } else {
-  const cmds = sortedInstrs.map(genCmd);
-  new RunAll(cmds, 'parallel');
+  const cmds = sortedInstrs.map(genCmd)
+  new RunAll(cmds, 'parallel')
 }
