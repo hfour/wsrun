@@ -1,16 +1,16 @@
-# Package cmd runner
+# Workspace command runner
 
 Usage:
 
 ```
-pkg-run cmd [<package>] [options]
+wsrun cmd [<package>] [options]
 
 Options:
   Mode (choose one):
     --parallel                      fully parallel mode (default)
     --smart                         in stages; start with packages that have no deps.
     --serial                        same as smart, but with no parallelism at the stage level
-  
+
   Individual package opts:
     --all                           execute the same cmd on all of its dependencies, too
 
@@ -24,17 +24,17 @@ Options:
 
 Examples:
 
-`yarn pkg-run watch` will run `yarn watch` on every individual package, in parallel.
+`yarn wsrun watch` will run `yarn watch` on every individual package, in parallel.
 
-`yarn pkg-run build --smart` will build all packages, in stages, starting from those that don't depend on other packages.
+`yarn wsrun build --smart` will build all packages, in stages, starting from those that don't depend on other packages.
 
-`yarn pkg-run watch planc --all` will watch planc and all of its dependencies.
+`yarn wsrun watch planc --all` will watch planc and all of its dependencies.
 
-`yarn pkg-run build h4zip --all --smart` will build all the deps. in order, then build h4zip
+`yarn wsrun build h4zip --all --smart` will build all the deps. in order, then build h4zip
 
-`yarn pkg-run clean` will remove the build folders in every package.
+`yarn wsrun clean` will remove the build folders in every package.
 
-`yarn pkg-run test` will test every package.
+`yarn wsrun test` will test every package.
 
 Todo:
 

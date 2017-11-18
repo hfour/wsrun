@@ -1,9 +1,12 @@
 {
-  "extends": "../../tsconfig.alt.json",
   "include": ["src"],
   "compilerOptions": {
+    "target": "es2015",
+    "module": "commonjs",
+    "moduleResolution": "node",
     "outDir": "./build",
     "declaration": true,
-    "strictNullChecks": true
+    "strict": true,
+    "experimentalDecorators": true
   }
 }

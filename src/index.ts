@@ -52,9 +52,11 @@ if (mode === 'smart' || mode === 'serial') {
     stages.push(stage);
     i++;
   }
+  console.log(stages)
   // run in batches
   Promise.mapSeries(stages, stg => {
     console.log('----- RUNNING A STAGE -----');
+    console.log("Packages in stage: ", stg.map(p => p.name))
     const cmds = stg.map(genCmd);
     return new RunAll(cmds, runMode).finishedAll;
   });

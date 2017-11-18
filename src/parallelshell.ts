@@ -20,8 +20,7 @@ export class CmdProcess {
     this.finished = new Promise((resolve, reject) => {
       this.cp.on('close', (code: number) => {
         if (code > 0) {
-          console.error('`' + this.cmd + '` failed with exit code ' + code);
-          reject(this);
+          reject(new Error('`' + this.cmd + '` failed with exit code ' + code));
         } else {
           resolve(this);
         }
@@ -38,7 +37,7 @@ export class CmdProcess {
       sh = 'cmd';
       shFlag = '/c';
     } else {
-      sh = 'sh';
+      sh = 'bash';
       shFlag = '-c';
     }
 

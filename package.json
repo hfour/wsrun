@@ -1,5 +1,5 @@
 {
-  "name": "pkg-run",
+  "name": "wsrun",
   "version": "1.0.0",
   "description": "executes commands on packages in parallel, but is aware of the dependencies between them",
   "main": "./build/index.js",
@@ -7,12 +7,20 @@
   "license": "MIT",
   "private": true,
   "bin": {
-    "pkg-run": "./build/index.js"
+    "wsrun": "./build/index.js"
   },
   "devDependencies": {
+    "@types/bluebird": "^3.5.18",
+    "@types/lodash": "^4.14.85",
+    "@types/node": "^8.0.53",
+    "@types/yargs": "^8.0.2",
     "yargs": "^10.0.3"
   },
   "scripts": {
     "build": "echo 'no build script defined'"
+  },
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "lodash": "^4.17.4"
   }
 }
