@@ -1,23 +1,38 @@
 {
   "name": "wsrun",
   "version": "1.0.0",
-  "description": "executes commands on packages in parallel, but is aware of the dependencies between them",
+  "description":
+    "executes commands on packages in parallel, but is aware of the dependencies between them",
   "main": "./build/index.js",
   "author": "Andrej T.",
   "license": "MIT",
   "private": true,
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json"]
+  },
   "bin": {
     "wsrun": "./build/index.js"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.18",
+    "@types/jest": "^21.1.6",
     "@types/lodash": "^4.14.85",
     "@types/node": "^8.0.53",
     "@types/yargs": "^8.0.2",
+    "jest": "^21.2.1",
+    "ts-jest": "^21.2.3",
+    "typescript": "^2.6.1",
     "yargs": "^10.0.3"
   },
   "scripts": {
-    "build": "echo 'no build script defined'"
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "dependencies": {
     "bluebird": "^3.5.1",

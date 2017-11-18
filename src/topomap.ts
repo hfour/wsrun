@@ -5,6 +5,7 @@
 /*tslint:disable*/
 
 import { PkgJson, Dict } from './workspace';
+import {flatMap, uniq} from 'lodash'
 
 const cacheMap = new WeakMap();
 
@@ -30,7 +31,7 @@ function cached(_obj: any, key: string, desc: PropertyDescriptor) {
   };
 }
 
-class PackageMap {
+export class PackageMap {
   map: Map<string, Package>;
   constructor(jsons: PkgJson[]) {
     this.map = new Map();
@@ -55,20 +56,29 @@ class PackageMap {
   }
 }
 
-class Package {
+export class Package {
   depNames: string[];
   list: PackageMap;
   cycle: boolean;
+  name: string;
 
   constructor(json: PkgJson, list: PackageMap) {
+    this.name = json.name
     this.depNames = (json.dependencies && Object.keys(json.dependencies)) || [];
     this.list = list;
     this.cycle = false;
   }
 
   @cached
-  get dependencies() {
-    return this.depNames.map(n => this.list.map.get(n)).filter(p => p);
+  get dependencies(): Package[] {
+    return this.depNames.map(n => this.list.map.get(n)!).filter(p => p);
+  }
+
+  @cached
+  get deepDependencies(): string[] {
+    let deeper = uniq(flatMap(this.dependencies, d => d.deepDependencies))
+    deeper.push(this.name)
+    return deeper;
   }
 
   @cached
@@ -103,4 +113,8 @@ export function buildOrder(pkgs: PkgJson[]) {
     pkgs = pkgs.filter(p => cycled[p.name]);
   }
   return orders;
+}
+
+export function pkgMap(pkgs: PkgJson[]) {
+  return new PackageMap(pkgs)
 }
