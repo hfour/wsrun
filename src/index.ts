@@ -25,8 +25,10 @@ if (argv.stages) {
 }
 
 // should we run the command on all the dependencies, too?
-let recursive = !!argv.recursive || !!argv.r
-let fastExit = !!argv.fastExit
+const recursive: boolean = argv.recursive || argv.r || false
+const fastExit: boolean = argv.fastExit || false
+const collectLogs: boolean = argv.collectLogs || false
+const addPrefix: boolean = argv.prefix === undefined ? true : false
 
 const cmd = argv._[0]
 const pkgName = argv._[1]
@@ -47,7 +49,7 @@ const pkgPaths = _.mapValues(_.keyBy(pkgs, p => p.json.name), v => v.path)
 const pkgJsons = _.map(pkgs, pkg => pkg.json)
 
 function genCmd(bi: BuildInstr) {
-  return `cd ${pkgPaths[bi.name]} && ${bin} ${cmd}`
+  return { pkgName: bi.name, cmd: `cd ${pkgPaths[bi.name]} && ${bin} ${cmd}` }
 }
 
 // choose which packages to run the command on
@@ -79,12 +81,11 @@ if (mode === 'stages' || mode === 'serial') {
 
   // run in batches
   runner = Promise.mapSeries(stages, stg => {
-    console.log('----- RUNNING A STAGE -----')
-    console.log('Packages in stage:', stg.map(p => p.name).join(', '))
+    console.log(`-- Packages in stage: ${stg.map(p => p.name).join(', ')} --`)
     const cmds = stg.map(genCmd)
-    return new RunAll(cmds, runMode, { fastExit }).finishedAll
+    return new RunAll(cmds, runMode, { fastExit, collectLogs, addPrefix }).finishedAll
   })
 } else {
   const cmds = sortedInstrs.map(genCmd)
-  runner = new RunAll(cmds, 'parallel', { fastExit }).finishedAll
+  runner = new RunAll(cmds, 'parallel', { fastExit, collectLogs, addPrefix }).finishedAll
 }
