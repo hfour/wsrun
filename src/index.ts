@@ -5,6 +5,7 @@
  */
 
 import * as Promise from 'bluebird'
+import * as fs from 'fs'
 import { argv } from 'yargs'
 import * as _ from 'lodash'
 
@@ -36,11 +37,18 @@ if (!cmd) {
 
 type BuildInstr = { name: string; order: number; cycle: boolean }
 
-function genCmd(bi: BuildInstr) {
-  return `cd ./packages/${bi.name} && ${bin} ${cmd}`
-}
+const workspaceGlobs = JSON.parse(fs.readFileSync('./package.json', 'utf8')).workspace || [
+  'packages/*'
+]
 
-const pkgJsons = _.map(listPkgs('./packages'), pkg => pkg.json)
+const pkgs = listPkgs('./', workspaceGlobs)
+const pkgPaths = _.mapValues(_.keyBy(pkgs, p => p.json.name), v => v.path)
+
+const pkgJsons = _.map(pkgs, pkg => pkg.json)
+
+function genCmd(bi: BuildInstr) {
+  return `cd ${pkgPaths[bi.name]} && ${bin} ${cmd}`
+}
 
 // choose which packages to run the command on
 let sortedInstrs: BuildInstr[]

@@ -4,6 +4,8 @@
 
 import * as fs from 'fs'
 import * as path from 'path'
+import * as glob from 'glob'
+import { flatMap } from 'lodash'
 
 export type Dict<T> = { [key: string]: T }
 
@@ -21,21 +23,22 @@ export type Packages = Dict<{
  * Given a path, it returns paths to package.json files of all packages,
  * and the package JSONs themselves.
  */
-export function listPkgs(pkgRoot: string) {
-  const filesAndDirs = fs.readdirSync(pkgRoot)
+export function listPkgs(wsRoot: string, globs: string[]) {
+  let filesAndDirs = flatMap(globs, g => glob.sync(g))
   const packages: Packages = {}
   filesAndDirs.forEach(f => {
-    const isDir = fs.lstatSync(path.resolve(pkgRoot, f)).isDirectory()
-    const hasPkgJson = fs.existsSync(path.resolve(pkgRoot, f, 'package.json'))
+    const isDir = fs.lstatSync(path.resolve(wsRoot, f)).isDirectory()
     if (isDir) {
+      const pkgJsonPath = path.resolve(wsRoot, f, 'package.json')
+      const hasPkgJson = fs.existsSync(pkgJsonPath)
       if (!hasPkgJson) {
         console.warn(`Warning: ${f} is a directory, but has no package.json`)
         return
       }
-      const pkgJsonPath = path.resolve(pkgRoot, f, 'package.json')
-      packages[f] = {
-        path: pkgJsonPath,
-        json: JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'))
+      const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'))
+      packages[pkgJson.name] = {
+        path: path.join(wsRoot, f),
+        json: pkgJson
       }
     }
   })
