@@ -10,21 +10,25 @@ import * as _ from 'lodash'
 
 import { RunAll } from './parallelshell'
 import { listPkgs } from './workspace'
-import { buildOrder } from './topomap'
+import { buildOrder, subsetBuildOrder } from './topomap'
 
 const bin = argv.bin || 'yarn'
 
 let mode: string
-if (argv.smart) {
-  mode = 'smart'
+if (argv.stages) {
+  mode = 'stages'
 } else if (argv.serial) {
   mode = 'serial'
 } else {
   mode = 'parallel'
 }
 
+// should we run the command on all the dependencies, too?
+let recursive = !!argv.recursive || !!argv.r
+let fastExit = !!argv.fastExit
+
 const cmd = argv._[0]
-// const pkgName = argv._[1];
+const pkgName = argv._[1]
 
 if (!cmd) {
   throw new Error('cmd is undefined')
@@ -37,10 +41,24 @@ function genCmd(bi: BuildInstr) {
 }
 
 const pkgJsons = _.map(listPkgs('./packages'), pkg => pkg.json)
-const sortedInstrs = _.sortBy(buildOrder(pkgJsons)[0], 'order')
 
-if (mode === 'smart' || mode === 'serial') {
-  const runMode = mode === 'smart' ? 'parallel' : 'serial'
+// choose which packages to run the command on
+let sortedInstrs: BuildInstr[]
+if (pkgName) {
+  if (recursive) {
+    sortedInstrs = subsetBuildOrder(pkgJsons, [pkgName])
+  } else {
+    sortedInstrs = [{ name: pkgName, order: 1, cycle: false }]
+  }
+} else {
+  sortedInstrs = buildOrder(pkgJsons)
+}
+sortedInstrs = _.sortBy(sortedInstrs, 'order')
+
+let runner: Promise<any>
+
+if (mode === 'stages' || mode === 'serial') {
+  const runMode = mode === 'stages' ? 'parallel' : 'serial'
   // generate stages
   const stages = []
   let i = 1
@@ -50,15 +68,15 @@ if (mode === 'smart' || mode === 'serial') {
     stages.push(stage)
     i++
   }
-  console.log(stages)
+
   // run in batches
-  Promise.mapSeries(stages, stg => {
+  runner = Promise.mapSeries(stages, stg => {
     console.log('----- RUNNING A STAGE -----')
-    console.log('Packages in stage: ', stg.map(p => p.name))
+    console.log('Packages in stage:', stg.map(p => p.name).join(', '))
     const cmds = stg.map(genCmd)
-    return new RunAll(cmds, runMode).finishedAll
+    return new RunAll(cmds, runMode, { fastExit }).finishedAll
   })
 } else {
   const cmds = sortedInstrs.map(genCmd)
-  new RunAll(cmds, 'parallel')
+  runner = new RunAll(cmds, 'parallel', { fastExit }).finishedAll
 }

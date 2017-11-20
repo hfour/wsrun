@@ -117,12 +117,15 @@ export function buildOrder(pkgs: PkgJson[]) {
     )
     pkgs = pkgs.filter(p => cycled[p.name])
   }
-  return orders
+  if (orders.length > 1) {
+    throw new Error('Found cyclic deps')
+  }
+  return orders[0]
 }
 
 export function subsetBuildOrder(pkgs: PkgJson[], subset: string[]) {
   let pm = new PackageMap(pkgs)
   let subsetDeps = flatMap(subset, p => pm.map.get(p)!.deepDependencies)
-  let subsetJsons = pkgs.filter(p => subsetDeps.indexOf(p.name))
-  return buildOrder(subsetJsons)[0]
+  let subsetJsons = pkgs.filter(p => subsetDeps.indexOf(p.name) >= 0)
+  return buildOrder(subsetJsons)
 }

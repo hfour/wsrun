@@ -29,7 +29,7 @@ let pkgs = [
 
 describe('topomap', () => {
   it('should create full build order', () => {
-    let fbo = buildOrder(pkgs)[0].sort((p1, p2) => p1.order - p2.order)
+    let fbo = buildOrder(pkgs).sort((p1, p2) => p1.order - p2.order)
 
     expect(fbo).toMatchObject([
       { name: 'h4-zip', order: 1 },
@@ -37,9 +37,20 @@ describe('topomap', () => {
       { name: 'backend', order: 3 }
     ])
   })
-  it('should create subset build order', () => {
+
+  it('should create subset build order for TL package', () => {
     let sbo = subsetBuildOrder(pkgs, ['backend']).sort((p1, p2) => p1.order - p2.order)
 
-    expect(sbo).toMatchObject([{ name: 'h4-format', order: 1 }, { name: 'backend', order: 2 }])
+    expect(sbo).toMatchObject([
+      { name: 'h4-zip', order: 1 },
+      { name: 'h4-format', order: 2 },
+      { name: 'backend', order: 3 }
+    ])
+  })
+
+  it('should create subset build order for mid-level package', () => {
+    let sbo = subsetBuildOrder(pkgs, ['h4-format']).sort((p1, p2) => p1.order - p2.order)
+
+    expect(sbo).toMatchObject([{ name: 'h4-zip', order: 1 }, { name: 'h4-format', order: 2 }])
   })
 })

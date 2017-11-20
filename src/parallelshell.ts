@@ -14,13 +14,24 @@ export class CmdProcess {
   cmd: string
   cp: ChildProcess
   finished: Promise<CmdProcess>
+  opts: {
+    rejectOnNonZeroExit?: boolean
+  }
 
-  constructor(cmd: string) {
+  constructor(cmd: string, opts: { rejectOnNonZeroExit?: boolean } = {}) {
+    this.opts = opts
+    console.log('Executing cmd:', cmd)
     this._start(cmd)
     this.finished = new Promise((resolve, reject) => {
       this.cp.on('close', (code: number) => {
         if (code > 0) {
-          reject(new Error('`' + this.cmd + '` failed with exit code ' + code))
+          const msg = '`' + this.cmd + '` failed with exit code ' + code
+          console.error(msg)
+          if (this.opts.rejectOnNonZeroExit) {
+            reject(new Error(msg))
+          } else {
+            resolve(this)
+          }
         } else {
           resolve(this)
         }
@@ -53,23 +64,23 @@ export class CmdProcess {
 export class RunAll {
   children: CmdProcess[]
   finishedAll: Promise<CmdProcess[]>
-  fastExit: boolean
+  opts: { fastExit?: boolean }
 
-  constructor(cmds: string[], mode: 'parallel' | 'serial') {
+  constructor(cmds: string[], mode: 'parallel' | 'serial', opts: { fastExit: boolean }) {
     this.children = []
-    this.fastExit = false // todo: this is broken. true no work. we need to check if code > 1
+    this.opts = opts
 
     if (mode === 'parallel') {
       this.finishedAll = Promise.map(cmds, cmd => {
-        const child = new CmdProcess(cmd)
-        this.fastExit && child.cp.on('close', this.closeAll.bind(this))
+        const child = new CmdProcess(cmd, { rejectOnNonZeroExit: this.opts.fastExit })
+        child.cp.on('close', code => code > 0 && this.closeAll.bind(this))
         this.children.push(child)
         return child.finished
       })
     } else {
       this.finishedAll = Promise.mapSeries(cmds, cmd => {
-        const child = new CmdProcess(cmd)
-        this.fastExit && child.cp.on('close', this.closeAll.bind(this))
+        const child = new CmdProcess(cmd, { rejectOnNonZeroExit: this.opts.fastExit })
+        child.cp.on('close', code => code > 0 && this.closeAll.bind(this))
         this.children = [child]
         return child.finished
       })
