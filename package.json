@@ -1,6 +1,6 @@
 {
   "name": "wsrun",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description":
     "executes commands on packages in parallel, but is aware of the dependencies between them",
   "main": "./build/index.js",
@@ -16,6 +16,9 @@
   "bin": {
     "wsrun": "./build/index.js"
   },
+  "files": [
+    "build/",
+  ],
   "devDependencies": {
     "@types/bluebird": "^3.5.18",
     "@types/glob": "^5.0.33",
