@@ -1,12 +1,11 @@
 {
   "name": "wsrun",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description":
     "executes commands on packages in parallel, but is aware of the dependencies between them",
   "main": "./build/index.js",
   "author": "Andrej T.",
   "license": "MIT",
-  "private": true,
   "jest": {
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
