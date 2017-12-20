@@ -17,7 +17,7 @@
     "wsrun": "./build/index.js"
   },
   "files": [
-    "build/",
+    "build/"
   ],
   "devDependencies": {
     "@types/bluebird": "^3.5.18",
