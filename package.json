@@ -11,7 +11,13 @@
       "^.+\\.tsx?$": "ts-jest"
     },
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
-    "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json"]
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json"
+    ]
   },
   "bin": {
     "wsrun": "./build/index.js"
@@ -38,8 +44,10 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "@types/split": "^0.3.28",
     "bluebird": "^3.5.1",
     "glob": "^7.1.2",
-    "lodash": "^4.17.4"
+    "lodash": "^4.17.4",
+    "split": "^1.0.1"
   }
 }

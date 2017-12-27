@@ -16,8 +16,8 @@ Options:
 
   Misc:
     --fast-exit                     if at least one command exits with code > 0, abort
-    --collect-output                (not impl) collect per-package stdout, print everything at the end, grouped
-    --prefix-logs                   (not impl) prefix stdout lines with "package_name |"
+    --collect-output                collect per-package stdout, print everything at the end, grouped
+    --no-prefix                     don't prefix output with "package_name |"
     --bin=yarn                      which program should we pass the cmd to
 ```
 
