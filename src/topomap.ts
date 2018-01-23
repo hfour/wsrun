@@ -109,19 +109,20 @@ export class Package {
 
 export function buildOrder(pkgs: PkgJson[]) {
   const orders = []
-  while (pkgs.length > 0) {
-    const newStuff = new PackageMap(pkgs).topoMap
-    orders.push(newStuff)
-    const cycled = newStuff.reduce(
-      (acc, el) => {
-        acc[el.name] = el.cycle
-        return acc
-      },
-      {} as Dict<boolean>
-    )
-    pkgs = pkgs.filter(p => cycled[p.name])
-  }
-  if (orders.length > 1) {
+
+  const newStuff = new PackageMap(pkgs).topoMap
+  orders.push(newStuff)
+  const cycled = newStuff.reduce(
+    (acc, el) => {
+      acc[el.name] = el.cycle
+      return acc
+    },
+    {} as Dict<boolean>
+  )
+  pkgs = pkgs.filter(p => cycled[p.name])
+
+  if (pkgs.length > 0) {
+    console.error('Cycles detected', pkgs)
     throw new Error('Found cyclic deps')
   }
   return orders[0]
