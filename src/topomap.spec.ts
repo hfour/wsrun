@@ -54,3 +54,28 @@ describe('topomap', () => {
     expect(sbo).toMatchObject([{ name: 'h4-zip', order: 1 }, { name: 'h4-format', order: 2 }])
   })
 })
+
+let pkgs2 = [
+  {
+    name: 'backend',
+    version: '1.0.0',
+    dependencies: {
+      lodash: '3.10.1'
+    },
+    devDependencies: { 'h4-format': '*' }
+  },
+  {
+    name: 'h4-format',
+    version: '1.0.0'
+  }
+]
+
+describe('topomap devdeps', () => {
+  it('should create full build order', () => {
+    let fbo = buildOrder(pkgs2).sort((p1, p2) => p1.order - p2.order)
+    expect(fbo[0].name).toEqual('h4-format')
+    expect(fbo[0].order).toEqual(1)
+    expect(fbo[1].name).toEqual('backend')
+    expect(fbo[1].order).toEqual(2)
+  })
+})

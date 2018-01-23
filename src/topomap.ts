@@ -64,7 +64,11 @@ export class Package {
 
   constructor(json: PkgJson, list: PackageMap) {
     this.name = json.name
-    this.depNames = (json.dependencies && Object.keys(json.dependencies)) || []
+    this.depNames = uniq(
+      ((json.dependencies && Object.keys(json.dependencies)) || []).concat(
+        (json.devDependencies && Object.keys(json.devDependencies)) || []
+      )
+    )
     this.list = list
     this.cycle = false
   }

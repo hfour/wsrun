@@ -1,8 +1,7 @@
 {
   "name": "wsrun",
-  "version": "0.1.4",
-  "description":
-    "executes commands on packages in parallel, but is aware of the dependencies between them",
+  "version": "1.1.0",
+  "description": "executes commands on packages in parallel, but is aware of the dependencies between them",
   "main": "./build/index.js",
   "author": "Andrej T.",
   "license": "MIT",
@@ -11,7 +10,13 @@
       "^.+\\.tsx?$": "ts-jest"
     },
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
-    "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json"]
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json"
+    ]
   },
   "bin": {
     "wsrun": "./build/index.js"
