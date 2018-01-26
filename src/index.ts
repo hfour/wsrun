@@ -63,4 +63,7 @@ let runner = new RunGraph(
 )
 
 let runlist = argv._.slice(1)
-runner.run(cmd, runlist.length > 0 ? runlist : undefined)
+runner.run(cmd, runlist.length > 0 ? runlist : undefined).catch(err => {
+  console.error('Aborting execution due to previous error')
+  process.exit(1)
+})
