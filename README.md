@@ -1,6 +1,8 @@
 # Workspace command runner
 
-Usage:
+Run commands in a yarn workspace, like a boss.
+
+### Usage:
 
 ```
 wsrun cmd [<package>] [options]
@@ -19,9 +21,10 @@ Options:
     --collect-output                collect per-package stdout, print everything at the end, grouped
     --no-prefix                     don't prefix output with "package_name |"
     --bin=yarn                      which program should we pass the cmd to
+    --done-criteria=regex           consider the process "done" when output line matches regex
 ```
 
-Examples:
+### Examples:
 
 `yarn wsrun watch` will run `yarn watch` on every individual package, in parallel.
 
@@ -31,12 +34,9 @@ Examples:
 
 `yarn wsrun build h4zip -r --stages` will build all the deps. in order, then build h4zip
 
-`yarn wsrun clean` will remove the build folders in every package.
+`yarn wsrun watch planc -r --stages --done-criteria='Compilation complete'` will watch planc deps,
+in order, continuing when command outputs "Compilation complete"
+
+`yarn wsrun clean` will remove "build" folders in every package.
 
 `yarn wsrun test` will test every package.
-
-Todo:
-
-* Support for collecting stdouts
-* Support for stdout line prefixes
-* Reorganize files

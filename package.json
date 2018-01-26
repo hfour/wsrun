@@ -21,15 +21,17 @@
   "bin": {
     "wsrun": "./build/index.js"
   },
-  "files": ["build/"],
+  "files": [
+    "build/"
+  ],
   "devDependencies": {
     "@types/bluebird": "^3.5.18",
     "@types/glob": "^5.0.33",
     "@types/jest": "^21.1.6",
     "@types/lodash": "^4.14.85",
     "@types/node": "^8.0.53",
-    "@types/yargs": "^8.0.2",
     "@types/split": "^0.3.28",
+    "@types/yargs": "^8.0.2",
     "jest": "^21.2.1",
     "ts-jest": "^21.2.3",
     "typescript": "^2.6.1"
@@ -45,6 +47,7 @@
     "glob": "^7.1.2",
     "lodash": "^4.17.4",
     "split": "^1.0.1",
+    "throat": "^4.1.0",
     "yargs": "^10.0.3"
   }
 }
