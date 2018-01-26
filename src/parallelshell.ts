@@ -198,7 +198,7 @@ export class RunGraph {
   private allDeps(pkg: PkgJson) {
     let findMyDeps = uniq(
       Object.keys(pkg.dependencies || {}).concat(Object.keys(pkg.devDependencies || {}))
-    ).filter(d => this.jsonMap.has(d) && (!this.opts.recursive || this.runList.has(d)))
+    ).filter(d => this.jsonMap.has(d) && (this.opts.recursive || this.runList.has(d)))
     return findMyDeps
   }
 
