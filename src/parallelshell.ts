@@ -25,6 +25,7 @@ export interface CmdOptions {
   collectLogs?: boolean
   addPrefix?: boolean
   doneCriteria?: string
+  path?: string
 }
 
 interface Defer<T> {
@@ -95,38 +96,44 @@ export class CmdProcess {
 
   private _start(cmd: string) {
     let sh: string
-    let shFlag: string
+    let args: string[]
 
     // cross platform compatibility
     if (process.platform === 'win32') {
       sh = 'cmd'
-      shFlag = '/c'
+      args = ['/c', cmd]
     } else {
-      sh = 'bash'
-      shFlag = '-c'
+      ;[sh, ...args] = cmd.split(' ')
+      //sh = 'bash'
+      //shFlag = '-c'
     }
 
     const stdOutBuffer: string[] = []
     const stdErrBuffer: string[] = []
 
     this.cmd = cmd
-    console.log(prefixLine(this.pkgName, '$ ' + cmd))
-    this.cp = spawn(sh, [shFlag, cmd], {
-      cwd: (process.versions.node < '8.0.0' ? process.cwd : process.cwd()) as string,
+    console.log('>>>', this.pkgName, '$', cmd)
+    this.cp = spawn(sh, args, {
+      cwd:
+        this.opts.path ||
+        ((process.versions.node < '8.0.0' ? process.cwd : process.cwd()) as string),
       env: process.env,
-      stdio: ['pipe']
+      stdio:
+        this.opts.collectLogs || this.opts.addPrefix || this.opts.doneCriteria ? 'pipe' : 'inherit'
     })
 
-    this.cp.stdout.pipe(split()).on('data', (line: string) => {
-      if (this.opts.collectLogs) stdOutBuffer.push(line)
-      else console.log(this.autoPrefix(line))
-      if (this.doneCriteria && this.doneCriteria.test(line)) this._finished.resolve()
-    })
-    this.cp.stderr.pipe(split()).on('data', (line: string) => {
-      if (this.opts.collectLogs) stdErrBuffer.push(line)
-      else console.error(this.autoPrefix(line))
-      if (this.doneCriteria && this.doneCriteria.test(line)) this._finished.resolve()
-    })
+    if (this.cp.stdout)
+      this.cp.stdout.pipe(split()).on('data', (line: string) => {
+        if (this.opts.collectLogs) stdOutBuffer.push(line)
+        else console.log(this.autoPrefix(line))
+        if (this.doneCriteria && this.doneCriteria.test(line)) this._finished.resolve()
+      })
+    if (this.cp.stderr)
+      this.cp.stderr.pipe(split()).on('data', (line: string) => {
+        if (this.opts.collectLogs) stdErrBuffer.push(line)
+        else console.error(this.autoPrefix(line))
+        if (this.doneCriteria && this.doneCriteria.test(line)) this._finished.resolve()
+      })
     if (this.opts.collectLogs)
       this.closed.then(() => {
         console.log(
@@ -145,6 +152,7 @@ export class CmdProcess {
 
 import { PkgJson, Dict } from './workspace'
 import { uniq } from 'lodash'
+import { inherits } from 'util'
 
 export interface GraphOptions {
   bin: string
@@ -203,7 +211,7 @@ export class RunGraph {
   }
 
   private makeCmd(cmd: string, pkg: string) {
-    return `cd ${this.pkgPaths[pkg]} && ${this.opts.bin} ${cmd}`
+    return `${this.opts.bin} ${cmd}`
   }
 
   private runOne(cmd: string, pkg: string): Promise<void> {
@@ -217,7 +225,8 @@ export class RunGraph {
         rejectOnNonZeroExit: this.opts.fastExit,
         collectLogs: this.opts.collectLogs,
         addPrefix: this.opts.addPrefix,
-        doneCriteria: this.opts.doneCriteria
+        doneCriteria: this.opts.doneCriteria,
+        path: this.pkgPaths[pkg]
       })
       child.exitCode.then(code => code > 0 && this.closeAll.bind(this))
       this.children.push(child)
