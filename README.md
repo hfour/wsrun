@@ -40,7 +40,3 @@ in order, continuing when command outputs "Compilation complete"
 `yarn wsrun clean` will remove "build" folders in every package.
 
 `yarn wsrun test` will test every package.
-
-### Notes:
-
-To preserve color, use --no-prefix and do not use --collect-output or --doneCriteria
