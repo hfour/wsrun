@@ -9,9 +9,8 @@ import * as fs from 'fs'
 import { argv } from 'yargs'
 import * as _ from 'lodash'
 
-import { RunAll } from './parallelshell'
+import { RunGraph } from './parallelshell'
 import { listPkgs } from './workspace'
-import { buildOrder, subsetBuildOrder } from './topomap'
 
 const bin = argv.bin || 'yarn'
 
@@ -29,6 +28,7 @@ const recursive: boolean = argv.recursive || argv.r || false
 const fastExit: boolean = argv.fastExit || false
 const collectLogs: boolean = argv.collectLogs || false
 const addPrefix: boolean = argv.prefix === undefined ? true : false
+const doneCriteria: string = argv.doneCriteria
 
 const cmd = argv._[0]
 const pkgName = argv._[1]
@@ -48,44 +48,19 @@ const pkgPaths = _.mapValues(_.keyBy(pkgs, p => p.json.name), v => v.path)
 
 const pkgJsons = _.map(pkgs, pkg => pkg.json)
 
-function genCmd(bi: BuildInstr) {
-  return { pkgName: bi.name, cmd: `cd ${pkgPaths[bi.name]} && ${bin} ${cmd}` }
-}
+let runner = new RunGraph(
+  pkgJsons,
+  {
+    bin,
+    fastExit,
+    collectLogs,
+    addPrefix,
+    mode: mode as any,
+    recursive,
+    doneCriteria
+  },
+  pkgPaths
+)
 
-// choose which packages to run the command on
-let sortedInstrs: BuildInstr[]
-if (pkgName) {
-  if (recursive) {
-    sortedInstrs = subsetBuildOrder(pkgJsons, [pkgName])
-  } else {
-    sortedInstrs = [{ name: pkgName, order: 1, cycle: false }]
-  }
-} else {
-  sortedInstrs = buildOrder(pkgJsons)
-}
-sortedInstrs = _.sortBy(sortedInstrs, 'order')
-
-let runner: Promise<any>
-
-if (mode === 'stages' || mode === 'serial') {
-  const runMode = mode === 'stages' ? 'parallel' : 'serial'
-  // generate stages
-  const stages = []
-  let i = 1
-  while (true) {
-    const stage = sortedInstrs.filter(pkg => pkg.order === i)
-    if (!stage.length) break
-    stages.push(stage)
-    i++
-  }
-
-  // run in batches
-  runner = Promise.mapSeries(stages, stg => {
-    console.log(`-- Packages in stage: ${stg.map(p => p.name).join(', ')} --`)
-    const cmds = stg.map(genCmd)
-    return new RunAll(cmds, runMode, { fastExit, collectLogs, addPrefix }).finishedAll
-  })
-} else {
-  const cmds = sortedInstrs.map(genCmd)
-  runner = new RunAll(cmds, 'parallel', { fastExit, collectLogs, addPrefix }).finishedAll
-}
+let runlist = argv._.slice(1)
+runner.run(cmd, runlist.length > 0 ? runlist : undefined)
