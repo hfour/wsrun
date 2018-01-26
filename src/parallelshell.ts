@@ -6,6 +6,7 @@ import * as Promise from 'bluebird'
 import { spawn, ChildProcess } from 'child_process'
 import split = require('split')
 import { reject } from 'bluebird'
+import * as tty from 'tty'
 
 type PromiseFn<T> = () => Promise<T>
 type PromiseFnRunner = <T>(f: PromiseFn<T>) => Promise<T>
@@ -117,7 +118,7 @@ export class CmdProcess {
       cwd:
         this.opts.path ||
         ((process.versions.node < '8.0.0' ? process.cwd : process.cwd()) as string),
-      env: process.env,
+      env: Object.assign(process.env, { FORCE_COLOR: process.stdout.isTTY }),
       stdio:
         this.opts.collectLogs || this.opts.addPrefix || this.opts.doneCriteria ? 'pipe' : 'inherit'
     })
@@ -136,16 +137,8 @@ export class CmdProcess {
       })
     if (this.opts.collectLogs)
       this.closed.then(() => {
-        console.log(
-          stdOutBuffer
-            .map(line => (this.opts.addPrefix ? prefixLine(this.pkgName, line) : line))
-            .join('\n')
-        )
-        console.error(
-          stdErrBuffer
-            .map(line => (this.opts.addPrefix ? prefixLine(this.pkgName, line) : line))
-            .join('\n')
-        )
+        console.log(stdOutBuffer.map(line => this.autoPrefix(line)).join('\n'))
+        console.error(stdErrBuffer.map(line => this.autoPrefix(line)).join('\n'))
       })
   }
 }
