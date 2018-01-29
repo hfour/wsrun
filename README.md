@@ -22,6 +22,7 @@ Options:
     --no-prefix                     don't prefix output with "package_name |"
     --bin=yarn                      which program should we pass the cmd to
     --done-criteria=regex           consider the process "done" when output line matches regex
+    --exclude pkgname               skip actually running the command for that package
 ```
 
 ### Examples:
@@ -31,6 +32,8 @@ Options:
 `yarn wsrun build --stages` will build all packages, in stages, starting from those that don't depend on other packages.
 
 `yarn wsrun watch planc -r` will watch planc and all of its dependencies.
+
+`yarn wsrun watch planc -r --exclude planc` will watch all of planc's dependencies but not planc
 
 `yarn wsrun build h4zip -r --stages` will build all the deps. in order, then build h4zip
 

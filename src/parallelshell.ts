@@ -155,6 +155,7 @@ export interface GraphOptions {
   mode: 'parallel' | 'serial' | 'stages'
   recursive: boolean
   doneCriteria: string | undefined
+  exclude: string[]
 }
 
 export class RunGraph {
@@ -213,6 +214,10 @@ export class RunGraph {
     let myDeps = Promise.all(this.allDeps(p).map(d => this.lookupOrRun(cmd, d)))
 
     return myDeps.then(() => {
+      if (this.opts.exclude.indexOf(pkg) >= 0) {
+        console.log('Package', pkg, 'in exclude list', this.opts.exclude, ': skipping')
+        return Promise.resolve()
+      }
       let cmdLine = this.makeCmd(cmd, pkg)
       const child = new CmdProcess(cmdLine, pkg, {
         rejectOnNonZeroExit: this.opts.fastExit,
