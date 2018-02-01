@@ -4,7 +4,7 @@
 
 import * as Promise from 'bluebird'
 import { spawn, ChildProcess } from 'child_process'
-import split = require('split')
+import originalSplit = require('split')
 import { reject } from 'bluebird'
 import * as tty from 'tty'
 
@@ -15,16 +15,67 @@ let mkThroat = require('throat')(Promise) as ((limit: number) => PromiseFnRunner
 
 let passThrough: PromiseFnRunner = f => f()
 
-function prefixLine(pkgName: string, line: string, prefixLength = 15): string {
-  const pkgNameShort = pkgName.slice(0, prefixLength - 1)
-  const spaces = ' '.repeat(Math.max(1, prefixLength - pkgName.length))
+let MaxPrefixLen = 15
+
+class NameShortener {
+  private prefixLen = 0
+  private freqMap = new Map<string, number>()
+  private shortNameMap = new Map<string, string>()
+
+  prefixer = (pkg: string, line: string) => {
+    return prefixLine(this.fix(pkg), line, this.prefixLen)
+  }
+
+  constructor(names: string[], maxLen: number) {
+    let max = 0
+    for (let pkg of names) {
+      for (let word of pkg.split(/[-/]/g)) {
+        let f = this.freqMap.get(word.toLowerCase()) || 0
+        this.freqMap.set(word.toLowerCase(), f + 1)
+      }
+      max = Math.max(pkg.length, max)
+    }
+    this.prefixLen = Math.min(maxLen, max)
+  }
+
+  fix(pkgName: string) {
+    let sname = this.shortNameMap.get(pkgName)
+    if (!sname) {
+      sname = pkgName
+
+      let mostFrequent = pkgName
+        .split(/[-/]/)
+        .map(word => ({ word, freq: this.freqMap.get(word.toLowerCase()) }))
+        .filter(w => w.freq && w.freq > 0 && w.word.length > 2)
+        .sort((w1, w2) => {
+          let f1f2 = (w2.freq || 0) - (w1.freq || 0)
+          if (f1f2 != 0) return f1f2
+          return w2.word.length - w1.word.length
+        })
+        .map(w => w.word)
+
+      while (sname.length > this.prefixLen && mostFrequent.length > 1) {
+        let best = mostFrequent.shift()
+        if (!best) break
+        let takeOnly = Math.max(1, best.length - (sname.length - this.prefixLen) - 1)
+        sname = sname.replace(new RegExp(best + '[-/]', 'gi'), best.substr(0, takeOnly) + '..')
+      }
+      this.shortNameMap.set(pkgName, sname)
+    }
+    return sname || 'WTH'
+  }
+}
+
+function prefixLine(pkgName: string, line: string, prefixLength = MaxPrefixLen): string {
+  const pkgNameShort = pkgName.slice(0, prefixLength)
+  const spaces = ' '.repeat(Math.max(0, prefixLength - pkgName.length))
   return `${pkgNameShort}${spaces} | ${line}`
 }
 
 export interface CmdOptions {
   rejectOnNonZeroExit?: boolean
   collectLogs?: boolean
-  addPrefix?: boolean
+  prefixer?: (pkg: string, line: string) => string
   doneCriteria?: string
   path?: string
 }
@@ -42,6 +93,10 @@ function defer<T>() {
   d!.promise = promise
   return d!
 }
+
+const SPLIT_OPTIONS = { trailing: false }
+const SPLIT_MAPPER = (x: string) => x
+const split = () => originalSplit(/\r?\n/, SPLIT_MAPPER, SPLIT_OPTIONS as any)
 
 export class CmdProcess {
   cp: ChildProcess
@@ -92,7 +147,7 @@ export class CmdProcess {
   }
 
   private autoPrefix(line: string) {
-    return this.opts.addPrefix ? prefixLine(this.pkgName, line) : line
+    return this.opts.prefixer ? this.opts.prefixer(this.pkgName, line) : line
   }
 
   private _start(cmd: string) {
@@ -120,7 +175,9 @@ export class CmdProcess {
         ((process.versions.node < '8.0.0' ? process.cwd : process.cwd()) as string),
       env: Object.assign(process.env, { FORCE_COLOR: process.stdout.isTTY }),
       stdio:
-        this.opts.collectLogs || this.opts.addPrefix || this.opts.doneCriteria ? 'pipe' : 'inherit'
+        this.opts.collectLogs || this.opts.prefixer != null || this.opts.doneCriteria
+          ? 'pipe'
+          : 'inherit'
     })
 
     if (this.cp.stdout)
@@ -165,6 +222,7 @@ export class RunGraph {
   private jsonMap = new Map<string, PkgJson>()
   private runList = new Set<string>()
   private throat: PromiseFnRunner = passThrough
+  prefixer = new NameShortener(this.pkgJsons.map(p => p.name), MaxPrefixLen).prefixer
 
   constructor(
     public pkgJsons: PkgJson[],
@@ -222,7 +280,7 @@ export class RunGraph {
       const child = new CmdProcess(cmdLine, pkg, {
         rejectOnNonZeroExit: this.opts.fastExit,
         collectLogs: this.opts.collectLogs,
-        addPrefix: this.opts.addPrefix,
+        prefixer: this.opts.addPrefix ? this.prefixer : undefined,
         doneCriteria: this.opts.doneCriteria,
         path: this.pkgPaths[pkg]
       })
