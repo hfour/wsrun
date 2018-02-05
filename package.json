@@ -43,7 +43,9 @@
     "test:watch": "jest --watch"
   },
   "dependencies": {
+    "@types/chalk": "^2.2.0",
     "bluebird": "^3.5.1",
+    "chalk": "^2.3.0",
     "glob": "^7.1.2",
     "lodash": "^4.17.4",
     "split": "^1.0.1",

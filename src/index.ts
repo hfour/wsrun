@@ -60,7 +60,8 @@ let runner = new RunGraph(
     mode: mode as any,
     recursive,
     doneCriteria,
-    exclude
+    exclude,
+    workspacePath: process.cwd()
   },
   pkgPaths
 )
