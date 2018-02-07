@@ -37,8 +37,8 @@ class Prefixer {
 }
 
 export interface CmdOptions {
-  rejectOnNonZeroExit?: boolean
-  collectLogs?: boolean
+  rejectOnNonZeroExit: boolean
+  collectLogs: boolean
   prefixer?: (basePath: string, pkg: string, line: string) => string
   doneCriteria?: string
   path: string
@@ -80,11 +80,7 @@ export class CmdProcess {
 
   doneCriteria?: RegExp
 
-  constructor(
-    private cmd: string,
-    private pkgName: string,
-    private opts: CmdOptions = { path: '' }
-  ) {
+  constructor(private cmd: string, private pkgName: string, private opts: CmdOptions) {
     this.pkgName = pkgName
     this.opts = opts
 
@@ -181,6 +177,7 @@ export interface GraphOptions {
   doneCriteria: string | undefined
   workspacePath: string
   exclude: string[]
+  excludeMissing: boolean
 }
 
 export class RunGraph {
@@ -241,7 +238,11 @@ export class RunGraph {
 
     return myDeps.then(() => {
       if (this.opts.exclude.indexOf(pkg) >= 0) {
-        console.log('Package', pkg, 'in exclude list', this.opts.exclude, ': skipping')
+        console.log(chalk.bold(pkg), 'in exclude list, skipping')
+        return Promise.resolve()
+      }
+      if (this.opts.excludeMissing && (!p || !p.scripts || !p.scripts[cmd])) {
+        console.log(chalk.bold(pkg), 'has no ', cmd, 'script, skipping missing')
         return Promise.resolve()
       }
       let cmdLine = this.makeCmd(cmd, pkg)

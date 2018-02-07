@@ -32,6 +32,8 @@ const doneCriteria: string = argv.doneCriteria
 const exclude: string[] =
   (argv.exclude && (Array.isArray(argv.exclude) ? argv.exclude : [argv.exclude])) || []
 
+const excludeMissing = argv.excludeMissing || false
+
 const cmd = argv._[0]
 const pkgName = argv._[1]
 
@@ -61,6 +63,7 @@ let runner = new RunGraph(
     recursive,
     doneCriteria,
     exclude,
+    excludeMissing,
     workspacePath: process.cwd()
   },
   pkgPaths

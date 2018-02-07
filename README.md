@@ -1,6 +1,6 @@
-# Workspace command runner
+# Workspace script runner
 
-Run commands in a yarn workspace, like a boss.
+Run npm scripts in a yarn workspace, like a boss.
 
 ### Usage:
 
@@ -14,15 +14,16 @@ Options:
     --serial                        same as "stages", but with no parallelism at the stage level
 
   Individual package opts:
-    -r, --recursive                 execute the same cmd on all of its dependencies, too
+    -r, --recursive                 execute the same script on all of its dependencies, too
 
   Misc:
-    --fast-exit                     if at least one command exits with code > 0, abort
+    --fast-exit                     if at least one script exits with code > 0, abort
     --collect-output                collect per-package stdout, print everything at the end, grouped
-    --no-prefix                     don't prefix output with "package_name |"
-    --bin=yarn                      which program should we pass the cmd to
+    --no-prefix                     don't prefix output
+    --bin=yarn                      which program should we pass the script to (default yarn)
     --done-criteria=regex           consider the process "done" when output line matches regex
-    --exclude pkgname               skip actually running the command for that package
+    --exclude pkgname               skip actually running the script for that package
+    --exclude-missing               skip packages which lack the specified script
 ```
 
 ### Examples:
@@ -43,3 +44,5 @@ in order, continuing when command outputs "Compilation complete"
 `yarn wsrun clean` will remove "build" folders in every package.
 
 `yarn wsrun test` will test every package.
+
+`yarn wsrun test --exclude-missing` will run the test script only on packages that have it

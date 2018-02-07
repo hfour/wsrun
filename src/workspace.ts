@@ -13,6 +13,7 @@ export interface PkgJson {
   name: string
   dependencies?: Dict<string>
   devDependencies?: Dict<string>
+  scripts?: { [name: string]: string }
 }
 
 export type Packages = Dict<{
