@@ -30,7 +30,8 @@ Options:
 
 `yarn wsrun watch` will run `yarn watch` on every individual package, in parallel.
 
-`yarn wsrun build --stages` will build all packages, in stages, starting from those that don't depend on other packages.
+`yarn wsrun build --stages` will build all packages, in stages, starting from those that don't
+depend on other packages.
 
 `yarn wsrun watch planc -r` will watch planc and all of its dependencies.
 

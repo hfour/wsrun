@@ -227,6 +227,33 @@ export class RunGraph {
     return findMyDeps
   }
 
+  detectCycles() {
+    let topLevelPkgs: { [name: string]: any } = {}
+    for (let key of this.jsonMap.keys()) {
+      topLevelPkgs[key] = '*'
+    }
+    let top = { name: '$', dependencies: topLevelPkgs }
+    let self = this
+    function deepCycle(json: PkgJson, pathLookup: string[]): string[] {
+      let newPathLookup = pathLookup.concat([json.name])
+      if (pathLookup.indexOf(json.name) >= 0) {
+        return newPathLookup.slice(1)
+      }
+      let currentDeps = Object.keys(json.dependencies || {}).concat(
+        Object.keys(json.devDependencies || {})
+      )
+      for (let name of currentDeps) {
+        let d = self.jsonMap.get(name)
+        if (!d) continue
+        let res = deepCycle(d, newPathLookup)
+        if (res.length) return res
+      }
+      return []
+    }
+    let res = deepCycle(top, [])
+    return res
+  }
+
   private makeCmd(cmd: string, pkg: string) {
     return `${this.opts.bin} ${cmd}`
   }

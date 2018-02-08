@@ -69,6 +69,12 @@ let runner = new RunGraph(
   pkgPaths
 )
 
+let cycle = runner.detectCycles()
+if (cycle.length > 0) {
+  console.error('\nERROR: Dependency cycle detected:\n', ' ', cycle.join(' <- '), '\n')
+  process.exit(1)
+}
+
 let runlist = argv._.slice(1)
 runner.run(cmd, runlist.length > 0 ? runlist : undefined).catch(err => {
   console.error('Aborting execution due to previous error')
