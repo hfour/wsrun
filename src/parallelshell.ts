@@ -236,8 +236,9 @@ export class RunGraph {
     let self = this
     function deepCycle(json: PkgJson, pathLookup: string[]): string[] {
       let newPathLookup = pathLookup.concat([json.name])
-      if (pathLookup.indexOf(json.name) >= 0) {
-        return newPathLookup.slice(1)
+      let index = pathLookup.indexOf(json.name)
+      if (index >= 0) {
+        return newPathLookup.slice(index)
       }
       let currentDeps = Object.keys(json.dependencies || {}).concat(
         Object.keys(json.devDependencies || {})
