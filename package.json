@@ -5,6 +5,7 @@
   "main": "./build/index.js",
   "author": "Andrej T.",
   "license": "MIT",
+  "repository": "github:whoeverest/wsrun",
   "jest": {
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
