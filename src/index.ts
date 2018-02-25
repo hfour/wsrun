@@ -43,10 +43,9 @@ if (!cmd) {
 
 type BuildInstr = { name: string; order: number; cycle: boolean }
 
-let jsonGlobs = JSON.parse(fs.readFileSync('./package.json', 'utf8')).workspaces as string[]
-const workspaceGlobs = (jsonGlobs || ['packages/*']).map(
-  glob => (glob.indexOf('*') >= 0 ? glob : glob + '/*')
-)
+const workspaceGlobs = JSON.parse(fs.readFileSync('./package.json', 'utf8')).workspaces || [
+  'packages/*'
+]
 
 const pkgs = listPkgs('./', workspaceGlobs)
 const pkgPaths = _.mapValues(_.keyBy(pkgs, p => p.json.name), v => v.path)
