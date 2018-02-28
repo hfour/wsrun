@@ -34,6 +34,8 @@ const exclude: string[] =
 
 const excludeMissing = argv.excludeMissing || false
 
+const showReport: boolean = argv.report || false
+
 const cmd = argv._[0]
 const pkgName = argv._[1]
 
@@ -64,6 +66,7 @@ let runner = new RunGraph(
     doneCriteria,
     exclude,
     excludeMissing,
+    showReport,
     workspacePath: process.cwd()
   },
   pkgPaths
@@ -76,7 +79,9 @@ if (cycle.length > 0) {
 }
 
 let runlist = argv._.slice(1)
-runner.run(cmd, runlist.length > 0 ? runlist : undefined).catch(err => {
-  console.error('Aborting execution due to previous error')
-  process.exit(1)
+runner.run(cmd, runlist.length > 0 ? runlist : undefined).then(hadError => {
+  if (hadError && fastExit) {
+    console.error('Aborting execution due to previous error')
+    process.exit(1)
+  }
 })
