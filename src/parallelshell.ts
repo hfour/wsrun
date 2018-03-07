@@ -204,6 +204,7 @@ export class RunGraph {
     public pkgPaths: Dict<string>
   ) {
     this.checkResultsAndReport = this.checkResultsAndReport.bind(this)
+    this.closeAll = this.closeAll.bind(this)
 
     pkgJsons.forEach(j => this.jsonMap.set(j.name, j))
     this.children = []
@@ -303,7 +304,7 @@ export class RunGraph {
         child.start()
         return child.finished
       })
-      // return this.opts.mode != 'parallel' ? finished : Promise.resolve()
+
       return finished
     })
   }
@@ -401,7 +402,7 @@ export class RunGraph {
   run(cmd: string, pkgs: string[] = this.pkgJsons.map(p => p.name)) {
     this.runList = new Set(pkgs)
     return Promise.all(pkgs.map(pkg => this.lookupOrRun(cmd, pkg)))
-      .catch(err => this.opts.fastExit && this.closeAll.apply(this))
+      .catch(err => this.opts.fastExit && this.closeAll())
       .then(() => this.checkResultsAndReport(cmd, pkgs))
   }
 }
