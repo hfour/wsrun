@@ -203,6 +203,8 @@ export class RunGraph {
     public opts: GraphOptions,
     public pkgPaths: Dict<string>
   ) {
+    this.checkResultsAndReport = this.checkResultsAndReport.bind(this)
+
     pkgJsons.forEach(j => this.jsonMap.set(j.name, j))
     this.children = []
     if (this.opts.mode === 'serial') this.throat = mkThroat(1)
@@ -307,77 +309,99 @@ export class RunGraph {
   }
 
   private checkResultsAndReport(cmd: string, pkgs: string[]) {
-    const report = (text: string) => {
-      if (this.opts.showReport) {
-        console.log(text)
-      }
-    }
-
-    let errorCount = 0
-    let successCount = 0
-    let pendingCount = 0
-    let skippedCount = 0
-
-    report(chalk.bold('\nReport:'))
+    const pkgsInError: string[] = []
+    const pkgsSuccessful: string[] = []
+    const pkgsPending: string[] = []
+    const pkgsSkipped: string[] = []
+    const pkgsMissingScript: string[] = []
 
     this.resultMap.forEach((result, pkg) => {
       switch (result) {
         case ResultSpecialValues.Excluded:
-          report(chalk.gray(`  ${pkg}: package excluded`))
-          skippedCount++
+          pkgsSkipped.push(pkg)
           break
 
         case ResultSpecialValues.MissingScript:
-          report(chalk.gray(`  ${pkg}: ${cmd} not defined`))
-          skippedCount++
+          pkgsMissingScript.push(pkg)
           break
 
         case ResultSpecialValues.Pending:
-          report(chalk.white(`  ${pkg}: ${cmd} has been cancelled`))
-          pendingCount++
+          pkgsPending.push(pkg)
           break
 
         case 0:
-          report(chalk.green(`  ${pkg}: ${cmd} finished successfully`))
-          successCount++
+          pkgsSuccessful.push(pkg)
           break
 
         default:
-          console.log(chalk.red(`  ${pkg}: ${cmd} finished with error`))
-          errorCount++
+          pkgsInError.push(pkg)
           break
       }
     })
 
     if (this.opts.showReport) {
+      const formatPkgs = (pgks: string[]): string => pgks.join(', ')
       const pkgsNotStarted = pkgs.filter(pkg => !this.resultMap.has(pkg))
 
-      pkgsNotStarted.forEach(pkg => {
-        report(chalk.white(`  ${pkg}: ${cmd} has not been started`))
-        pendingCount++
-      })
+      console.log(chalk.bold('\nReport:'))
+
+      if (pkgsInError.length)
+        console.log(
+          chalk.red(
+            `  ${pkgsInError.length} packages finished \`${cmd}\` with error: ${formatPkgs(
+              pkgsInError
+            )}`
+          )
+        )
+      if (pkgsSuccessful.length)
+        console.log(
+          chalk.green(
+            `  ${pkgsSuccessful.length} packages finished \`${cmd}\` successfully: ${formatPkgs(
+              pkgsSuccessful
+            )}`
+          )
+        )
+      if (pkgsPending.length)
+        console.log(
+          chalk.white(
+            `  ${pkgsPending.length} packages have been cancelled running \`${cmd}\`: ${formatPkgs(
+              pkgsPending
+            )}`
+          )
+        )
+      if (pkgsNotStarted.length)
+        console.log(
+          chalk.white(
+            `  ${pkgsNotStarted.length} packages have not started running \`${cmd}\`: ${formatPkgs(
+              pkgsNotStarted
+            )}`
+          )
+        )
+      if (pkgsMissingScript.length)
+        console.log(
+          chalk.gray(
+            `  ${pkgsMissingScript.length} packages are missing script \`${cmd}\`: ${formatPkgs(
+              pkgsMissingScript
+            )}`
+          )
+        )
+      if (pkgsSkipped.length)
+        console.log(
+          chalk.gray(
+            `  ${pkgsSkipped.length} packages have been skipped: ${formatPkgs(pkgsSkipped)}`
+          )
+        )
+
+      console.log()
     }
 
-    report(
-      chalk.bold(
-        '\n' +
-          chalk.red(errorCount + ' with error') +
-          ', ' +
-          chalk.green(successCount + ' successful') +
-          ', ' +
-          pendingCount +
-          ' not completed, ' +
-          chalk.gray(skippedCount + ' skipped\n')
-      )
-    )
-
-    return errorCount > 0
+    return pkgsInError.length > 0
   }
 
   run(cmd: string, pkgs: string[] = this.pkgJsons.map(p => p.name)) {
     this.runList = new Set(pkgs)
     return Promise.all(pkgs.map(pkg => this.lookupOrRun(cmd, pkg)))
       .catch(err => this.opts.fastExit && this.closeAll.apply(this))
-      .then(() => this.checkResultsAndReport.call(this, cmd, pkgs))
+      .then(() => this.checkResultsAndReport(cmd, pkgs))
   }
 }
