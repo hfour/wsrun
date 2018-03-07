@@ -8,6 +8,7 @@ import * as Promise from 'bluebird'
 import * as fs from 'fs'
 import { argv } from 'yargs'
 import * as _ from 'lodash'
+import chalk from 'chalk'
 
 import { RunGraph } from './parallelshell'
 import { listPkgs } from './workspace'
@@ -81,7 +82,16 @@ if (cycle.length > 0) {
 let runlist = argv._.slice(1)
 runner.run(cmd, runlist.length > 0 ? runlist : undefined).then(hadError => {
   if (hadError && fastExit) {
-    console.error('Aborting execution due to previous error')
-    process.exit(1)
+    console.error(
+      chalk.red(
+        `\nAborting execution and cancelling running scripts because an error occurred executing \`${cmd}\` for one of the packages.`
+      )
+    )
+    console.error(
+      '  Run wsrun without option --fast-exit to keep going despite errors or with option --report to see which package caused the error.\n'
+    )
+    console.error()
   }
+
+  process.exit(hadError ? 1 : 0)
 })
