@@ -178,7 +178,15 @@ export interface GraphOptions {
   workspacePath: string
   exclude: string[]
   excludeMissing: boolean
+  showReport: boolean
 }
+
+enum ResultSpecialValues {
+  Pending = 'PENDING',
+  Excluded = 'EXCLUDED',
+  MissingScript = 'MISSING_SCRIPT'
+}
+type Result = number | ResultSpecialValues
 
 export class RunGraph {
   private procmap = new Map<string, Promise<any>>()
@@ -186,6 +194,7 @@ export class RunGraph {
   finishedAll: Promise<CmdProcess[]>
   private jsonMap = new Map<string, PkgJson>()
   private runList = new Set<string>()
+  private resultMap = new Map<string, Result>()
   private throat: PromiseFnRunner = passThrough
   prefixer = new Prefixer(this.opts.workspacePath).prefixer
 
@@ -194,6 +203,9 @@ export class RunGraph {
     public opts: GraphOptions,
     public pkgPaths: Dict<string>
   ) {
+    this.checkResultsAndReport = this.checkResultsAndReport.bind(this)
+    this.closeAll = this.closeAll.bind(this)
+
     pkgJsons.forEach(j => this.jsonMap.set(j.name, j))
     this.children = []
     if (this.opts.mode === 'serial') this.throat = mkThroat(1)
@@ -265,12 +277,16 @@ export class RunGraph {
     let myDeps = Promise.all(this.allDeps(p).map(d => this.lookupOrRun(cmd, d)))
 
     return myDeps.then(() => {
+      this.resultMap.set(pkg, ResultSpecialValues.Pending)
+
       if (this.opts.exclude.indexOf(pkg) >= 0) {
         console.log(chalk.bold(pkg), 'in exclude list, skipping')
+        this.resultMap.set(pkg, ResultSpecialValues.Excluded)
         return Promise.resolve()
       }
       if (this.opts.excludeMissing && (!p || !p.scripts || !p.scripts[cmd])) {
         console.log(chalk.bold(pkg), 'has no ', cmd, 'script, skipping missing')
+        this.resultMap.set(pkg, ResultSpecialValues.MissingScript)
         return Promise.resolve()
       }
       let cmdLine = this.makeCmd(cmd, pkg)
@@ -281,19 +297,112 @@ export class RunGraph {
         doneCriteria: this.opts.doneCriteria,
         path: this.pkgPaths[pkg]
       })
-      child.exitCode.then(code => code > 0 && this.closeAll.bind(this))
+      child.exitCode.then(code => this.resultMap.set(pkg, code))
       this.children.push(child)
 
       let finished = this.throat(() => {
         child.start()
         return child.finished
       })
-      return this.opts.mode != 'parallel' ? finished : Promise.resolve()
+
+      return finished
     })
+  }
+
+  private checkResultsAndReport(cmd: string, pkgs: string[]) {
+    const pkgsInError: string[] = []
+    const pkgsSuccessful: string[] = []
+    const pkgsPending: string[] = []
+    const pkgsSkipped: string[] = []
+    const pkgsMissingScript: string[] = []
+
+    this.resultMap.forEach((result, pkg) => {
+      switch (result) {
+        case ResultSpecialValues.Excluded:
+          pkgsSkipped.push(pkg)
+          break
+
+        case ResultSpecialValues.MissingScript:
+          pkgsMissingScript.push(pkg)
+          break
+
+        case ResultSpecialValues.Pending:
+          pkgsPending.push(pkg)
+          break
+
+        case 0:
+          pkgsSuccessful.push(pkg)
+          break
+
+        default:
+          pkgsInError.push(pkg)
+          break
+      }
+    })
+
+    if (this.opts.showReport) {
+      const formatPkgs = (pgks: string[]): string => pgks.join(', ')
+      const pkgsNotStarted = pkgs.filter(pkg => !this.resultMap.has(pkg))
+
+      console.log(chalk.bold('\nReport:'))
+
+      if (pkgsInError.length)
+        console.log(
+          chalk.red(
+            `  ${pkgsInError.length} packages finished \`${cmd}\` with error: ${formatPkgs(
+              pkgsInError
+            )}`
+          )
+        )
+      if (pkgsSuccessful.length)
+        console.log(
+          chalk.green(
+            `  ${pkgsSuccessful.length} packages finished \`${cmd}\` successfully: ${formatPkgs(
+              pkgsSuccessful
+            )}`
+          )
+        )
+      if (pkgsPending.length)
+        console.log(
+          chalk.white(
+            `  ${pkgsPending.length} packages have been cancelled running \`${cmd}\`: ${formatPkgs(
+              pkgsPending
+            )}`
+          )
+        )
+      if (pkgsNotStarted.length)
+        console.log(
+          chalk.white(
+            `  ${pkgsNotStarted.length} packages have not started running \`${cmd}\`: ${formatPkgs(
+              pkgsNotStarted
+            )}`
+          )
+        )
+      if (pkgsMissingScript.length)
+        console.log(
+          chalk.gray(
+            `  ${pkgsMissingScript.length} packages are missing script \`${cmd}\`: ${formatPkgs(
+              pkgsMissingScript
+            )}`
+          )
+        )
+      if (pkgsSkipped.length)
+        console.log(
+          chalk.gray(
+            `  ${pkgsSkipped.length} packages have been skipped: ${formatPkgs(pkgsSkipped)}`
+          )
+        )
+
+      console.log()
+    }
+
+    return pkgsInError.length > 0
   }
 
   run(cmd: string, pkgs: string[] = this.pkgJsons.map(p => p.name)) {
     this.runList = new Set(pkgs)
-    return Promise.all(pkgs.map(pkg => this.lookupOrRun(cmd, pkg))).thenReturn(void 0)
+    return Promise.all(pkgs.map(pkg => this.lookupOrRun(cmd, pkg)))
+      .catch(err => this.opts.fastExit && this.closeAll())
+      .then(() => this.checkResultsAndReport(cmd, pkgs))
   }
 }

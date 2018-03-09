@@ -24,6 +24,7 @@ Options:
     --done-criteria=regex           consider the process "done" when output line matches regex
     --exclude pkgname               skip actually running the script for that package
     --exclude-missing               skip packages which lack the specified script
+    --report                        show an execution report once all scripts are finished
 ```
 
 ### Examples:

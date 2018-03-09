@@ -8,6 +8,7 @@ import * as Promise from 'bluebird'
 import * as fs from 'fs'
 import { argv } from 'yargs'
 import * as _ from 'lodash'
+import chalk from 'chalk'
 
 import { RunGraph } from './parallelshell'
 import { listPkgs } from './workspace'
@@ -33,6 +34,8 @@ const exclude: string[] =
   (argv.exclude && (Array.isArray(argv.exclude) ? argv.exclude : [argv.exclude])) || []
 
 const excludeMissing = argv.excludeMissing || false
+
+const showReport: boolean = argv.report || false
 
 const cmd = argv._[0]
 const pkgName = argv._[1]
@@ -64,6 +67,7 @@ let runner = new RunGraph(
     doneCriteria,
     exclude,
     excludeMissing,
+    showReport,
     workspacePath: process.cwd()
   },
   pkgPaths
@@ -76,7 +80,18 @@ if (cycle.length > 0) {
 }
 
 let runlist = argv._.slice(1)
-runner.run(cmd, runlist.length > 0 ? runlist : undefined).catch(err => {
-  console.error('Aborting execution due to previous error')
-  process.exit(1)
+runner.run(cmd, runlist.length > 0 ? runlist : undefined).then(hadError => {
+  if (hadError && fastExit) {
+    console.error(
+      chalk.red(
+        `\nAborting execution and cancelling running scripts because an error occurred executing \`${cmd}\` for one of the packages.`
+      )
+    )
+    console.error(
+      '  Run wsrun without option --fast-exit to keep going despite errors or with option --report to see which package caused the error.\n'
+    )
+    console.error()
+  }
+
+  process.exit(hadError ? 1 : 0)
 })
