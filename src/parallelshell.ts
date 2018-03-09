@@ -63,7 +63,7 @@ const SPLIT_MAPPER = (x: string) => x
 const split = () => originalSplit(/\r?\n/, SPLIT_MAPPER, SPLIT_OPTIONS as any)
 
 export class CmdProcess {
-  cp: ChildProcess
+  cp!: ChildProcess
   private _closed: Defer<number>
   private _finished: Defer<void>
   private _exitCode: Defer<number>
@@ -191,7 +191,7 @@ type Result = number | ResultSpecialValues
 export class RunGraph {
   private procmap = new Map<string, Promise<any>>()
   children: CmdProcess[]
-  finishedAll: Promise<CmdProcess[]>
+  finishedAll!: Promise<CmdProcess[]>
   private jsonMap = new Map<string, PkgJson>()
   private runList = new Set<string>()
   private resultMap = new Map<string, Result>()

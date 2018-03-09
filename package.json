@@ -35,7 +35,7 @@
     "@types/yargs": "^8.0.2",
     "jest": "^21.2.1",
     "ts-jest": "^21.2.3",
-    "typescript": "^2.6.1"
+    "typescript": "^2.7.2"
   },
   "scripts": {
     "build": "tsc",
