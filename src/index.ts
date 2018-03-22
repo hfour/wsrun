@@ -46,7 +46,10 @@ if (!cmd) {
 
 type BuildInstr = { name: string; order: number; cycle: boolean }
 
-const workspaceGlobs = JSON.parse(fs.readFileSync('./package.json', 'utf8')).workspaces || [
+const packageJsonWorkspaces = JSON.parse(fs.readFileSync('./package.json', 'utf8')).workspaces
+const packageJsonWorkspacesNohoistFormat = packageJsonWorkspaces && packageJsonWorkspaces.packages
+
+const workspaceGlobs = packageJsonWorkspacesNohoistFormat || packageJsonWorkspaces || [
   'packages/*'
 ]
 
