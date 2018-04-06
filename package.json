@@ -41,7 +41,8 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "prepublish":"tsc"
   },
   "dependencies": {
     "@types/chalk": "^2.2.0",
