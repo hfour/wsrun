@@ -49,9 +49,7 @@ type BuildInstr = { name: string; order: number; cycle: boolean }
 const packageJsonWorkspaces = JSON.parse(fs.readFileSync('./package.json', 'utf8')).workspaces
 const packageJsonWorkspacesNohoistFormat = packageJsonWorkspaces && packageJsonWorkspaces.packages
 
-const workspaceGlobs = packageJsonWorkspacesNohoistFormat || packageJsonWorkspaces || [
-  'packages/*'
-]
+const workspaceGlobs = packageJsonWorkspacesNohoistFormat || packageJsonWorkspaces || ['packages/*']
 
 const pkgs = listPkgs('./', workspaceGlobs)
 const pkgPaths = _.mapValues(_.keyBy(pkgs, p => p.json.name), v => v.path)
@@ -85,16 +83,7 @@ if (cycle.length > 0) {
 let runlist = argv._.slice(1)
 runner.run(cmd, runlist.length > 0 ? runlist : undefined).then(hadError => {
   if (hadError && fastExit) {
-    console.error(
-      chalk.red(
-        `\nAborting execution and cancelling running scripts because an error occurred executing \`${cmd}\` for one of the packages.`
-      )
-    )
-    console.error(
-      '  Run wsrun without option --fast-exit to keep going despite errors or with option --report to see which package caused the error.\n'
-    )
-    console.error()
+    console.error(chalk.red(`Aborted execution due to previous error`))
   }
-
   process.exit(hadError ? 1 : 0)
 })

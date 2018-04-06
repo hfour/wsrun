@@ -77,6 +77,11 @@ export class CmdProcess {
   get exitCode() {
     return this._exitCode.promise
   }
+  get exitError() {
+    return this.exitCode.then(c => {
+      if (c != 0) throw new Error('`' + this.cmd + '` failed with exit code ' + c)
+    })
+  }
 
   doneCriteria?: RegExp
 
@@ -305,6 +310,7 @@ export class RunGraph {
         return child.finished
       })
 
+      if (this.opts.mode === 'parallel') finished = Promise.resolve()
       return finished
     })
   }
@@ -402,6 +408,7 @@ export class RunGraph {
   run(cmd: string, pkgs: string[] = this.pkgJsons.map(p => p.name)) {
     this.runList = new Set(pkgs)
     return Promise.all(pkgs.map(pkg => this.lookupOrRun(cmd, pkg)))
+      .then(() => Promise.all(this.children.map(c => c.exitError)))
       .catch(err => this.opts.fastExit && this.closeAll())
       .then(() => this.checkResultsAndReport(cmd, pkgs))
   }
