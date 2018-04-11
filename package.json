@@ -45,7 +45,6 @@
     "prepublish":"tsc"
   },
   "dependencies": {
-    "@types/chalk": "^2.2.0",
     "bluebird": "^3.5.1",
     "chalk": "^2.3.0",
     "glob": "^7.1.2",
