@@ -18,7 +18,7 @@ Options:
 
   Misc:
     --fast-exit                     if at least one script exits with code > 0, abort
-    --collect-output                collect per-package stdout, print everything at the end, grouped
+    --collect-logs                  collect per-package stdout, print everything at the end, grouped
     --no-prefix                     don't prefix output
     --bin=yarn                      which program should we pass the script to (default yarn)
     --done-criteria=regex           consider the process "done" when output line matches regex
