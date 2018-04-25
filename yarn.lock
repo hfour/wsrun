@@ -35,9 +35,9 @@
   dependencies:
     "@types/node" "*"
 
-"@types/yargs@^8.0.2":
-  version "8.0.2"
-  resolved "https://registry.yarnpkg.com/@types/yargs/-/yargs-8.0.2.tgz#0f9c7b236e2d78cd8f4b6502de15d0728aa29385"
+"@types/yargs@^10.0.0":
+  version "10.0.2"
+  resolved "https://repo.symphony.com/artifactory/api/npm/npm-virtual-dev/@types/yargs/-/yargs-10.0.2.tgz#cc4ea921877874d1261e2c44b89807bc836e1b12"
 
 abab@^1.0.3:
   version "1.0.4"

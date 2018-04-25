@@ -32,7 +32,7 @@
     "@types/lodash": "^4.14.85",
     "@types/node": "^8.0.53",
     "@types/split": "^0.3.28",
-    "@types/yargs": "^8.0.2",
+    "@types/yargs": "^10.0.0",
     "jest": "^21.2.1",
     "ts-jest": "^21.2.3",
     "typescript": "^2.7.2"
@@ -42,7 +42,7 @@
     "watch": "tsc -w",
     "test": "jest",
     "test:watch": "jest --watch",
-    "prepublish":"tsc"
+    "prepublish": "tsc"
   },
   "dependencies": {
     "bluebird": "^3.5.1",
