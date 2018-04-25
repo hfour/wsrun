@@ -15,7 +15,27 @@ import { listPkgs } from './workspace'
 
 yargs
   .wrap(yargs.terminalWidth() - 1)
-  .usage('Usage: $0 <command> [<package>] [options]')
+  .updateStrings({
+    'Options:': 'Other Options:'
+  })
+  .usage('$0 <command> [<package>] [options]', '', (yargs) => {
+    return yargs
+      .positional('command', {
+        describe: 'The command to run in each package',
+        type: 'string'
+      })
+      .positional('package', {
+        describe: 'An individual package to run the script on (see options below)',
+        type: 'string'
+      })
+      .demandOption('command')
+      // Note: these examples are chained here as they do not show up otherwise
+      // when the required positional <command> is not specified
+      .example('$0 clean', 'Runs "yarn clean" in each of the packages in parallel')
+      .example('$0 build app -r --stages', 'Runs "yarn build" in app and all of its dependencies in stages, moving up the dependency tree')
+      .example('$0 watch --stages --done-criteria="Finished"', 'Runs "yarn watch" in each of the packages in stages, continuing when the process outputs "Finished"')
+      .example('$0 test --exclude-missing', 'Runs "yarn test" in all packages that have such a script')
+  })
   .group(['parallel', 'stages', 'serial'], 'Mode (choose one):')
   .options({
     'parallel': {
@@ -57,7 +77,8 @@ yargs
     },
     'bin': {
       default: 'yarn',
-      describe: 'The program to pass the command to'
+      describe: 'The program to pass the command to',
+      type: 'string'
     },
     'done-criteria': {
       describe: 'Consider a process "done" when an output line matches the specified RegExp'
@@ -73,11 +94,6 @@ yargs
       describe: 'Show an execution report once the command has finished in each package'
     }
   })
-  .example('',
-    `wsrun clean - Will run "yarn clean" in each of the packages in parallel
-wsrun build --stages - Will run "yarn build" in each of the packages in stages, moving up the dependency tree
-wsrun watch app -r --stages --done-criteria='Compilation complete' - Will run "yarn watch" in app and all of its dependencies in stages, continuing when the process outputs "Compilation Complete."
-wsrun test --exclude-missing - Will run "yarn test" in all packages that have such a script`)
 
 const argv = yargs.argv
 const bin = argv.bin || 'yarn'
@@ -104,12 +120,12 @@ const excludeMissing = argv.excludeMissing || false
 
 const showReport: boolean = argv.report || false
 
-const cmd = argv._[0]
-const pkgName = argv._[1]
+const cmd = argv.command
+const pkgName = argv.package
 
 if (!cmd) {
-  yargs.showHelp();
-  process.exit(1);
+  yargs.showHelp()
+  process.exit(1)
 }
 
 type BuildInstr = { name: string; order: number; cycle: boolean }
