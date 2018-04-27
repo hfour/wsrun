@@ -18,53 +18,53 @@ yargs
   .updateStrings({
     'Options:': 'Other Options:'
   })
-  .usage('$0 <command> [<package>] [options]', '', (yargs) => {
-    return yargs
-      .positional('command', {
-        describe: 'The command to run in each package',
-        type: 'string'
-      })
-      .positional('package', {
-        describe: 'An individual package to run the script on (see options below)',
-        type: 'string'
-      })
-      .demandOption('command')
-      // Note: these examples are chained here as they do not show up otherwise
-      // when the required positional <command> is not specified
-      .example('$0 clean', 'Runs "yarn clean" in each of the packages in parallel')
-      .example('$0 build app -r --stages', 'Runs "yarn build" in app and all of its dependencies in stages, moving up the dependency tree')
-      .example('$0 watch --stages --done-criteria="Finished"', 'Runs "yarn watch" in each of the packages in stages, continuing when the process outputs "Finished"')
-      .example('$0 test --exclude-missing', 'Runs "yarn test" in all packages that have such a script')
-  })
+  .usage('$0 <command> [<package> [package] ...] [options]')
+  .array('package')
+  // Note: these examples are chained here as they do not show up otherwise
+  // when the required positional <command> is not specified
+  .example('$0 clean', 'Runs "yarn clean" in each of the packages in parallel')
+  .example(
+    '$0 build app -r --stages',
+    'Runs "yarn build" in app and all of its dependencies in stages, moving up the dependency tree'
+  )
+  .example(
+    '$0 watch --stages --done-criteria="Finished"',
+    'Runs "yarn watch" in each of the packages in stages, continuing when the process outputs "Finished"'
+  )
+  .example('$0 test --exclude-missing', 'Runs "yarn test" in all packages that have such a script')
+
   .group(['parallel', 'stages', 'serial'], 'Mode (choose one):')
   .options({
-    'parallel': {
+    parallel: {
       describe: 'Fully parallel mode (default)'
     },
-    'stages': {
+    stages: {
       describe: 'Run in stages: start with packages that have no deps'
     },
-    'serial': {
+    serial: {
       describe: 'Same as "stages" but with no parallelism at the stage level'
     }
   })
   .group('recursive', 'Individual Package Options:')
   .options({
-    'recursive': {
+    recursive: {
       alias: 'r',
       describe: 'Execute the same script on all of its dependencies, too'
     }
   })
-  .group([
-    'fast-exit',
-    'collect-logs',
-    'no-prefix',
-    'bin',
-    'done-criteria',
-    'exclude',
-    'exclude-missing',
-    'report'
-  ], 'Misc Options:')
+  .group(
+    [
+      'fast-exit',
+      'collect-logs',
+      'no-prefix',
+      'bin',
+      'done-criteria',
+      'exclude',
+      'exclude-missing',
+      'report'
+    ],
+    'Misc Options:'
+  )
   .options({
     'fast-exit': {
       describe: 'If at least one script exits with code > 0, abort'
@@ -73,9 +73,9 @@ yargs
       describe: 'Collect per-package output and print it at the end of each script'
     },
     'no-prefix': {
-      describe: 'Don\'t prefix output'
+      describe: "Don't prefix output"
     },
-    'bin': {
+    bin: {
       default: 'yarn',
       describe: 'The program to pass the command to',
       type: 'string'
@@ -83,14 +83,15 @@ yargs
     'done-criteria': {
       describe: 'Consider a process "done" when an output line matches the specified RegExp'
     },
-    'exclude': {
+    exclude: {
       type: 'string',
       describe: 'Skip running the command for that package'
     },
     'exclude-missing': {
-      describe: 'Skip packages which lack the specified command in the scripts section of their package.json'
+      describe:
+        'Skip packages which lack the specified command in the scripts section of their package.json'
     },
-    'report': {
+    report: {
       describe: 'Show an execution report once the command has finished in each package'
     }
   })
@@ -120,8 +121,7 @@ const excludeMissing = argv.excludeMissing || false
 
 const showReport: boolean = argv.report || false
 
-const cmd = argv.command
-const pkgName = argv.package
+const cmd = argv._[0]
 
 if (!cmd) {
   yargs.showHelp()
