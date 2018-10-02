@@ -1,6 +1,5 @@
 import 'jest'
 import { withScaffold, echo, wsrun } from './test.util'
-import * as fs from 'mz/fs'
 
 let pkgList = (errorp3: boolean = false) => [
   echo.makePkg({ name: 'p1', dependencies: { p2: '*' } }),
@@ -9,6 +8,7 @@ let pkgList = (errorp3: boolean = false) => [
   echo.makePkg({ name: 'p4', dependencies: { p5: '*' } }),
   echo.makePkg({ name: 'p5', dependencies: {} })
 ]
+
 describe('basic', () => {
   it('should run for all packages when in series', async () => {
     await withScaffold(
@@ -17,6 +17,7 @@ describe('basic', () => {
       },
       async () => {
         let tst = await wsrun('echo --serial')
+        expect(tst.error).toBeFalsy()
         let output = await echo.getOutput()
         expect(output).toEqual(['p5', 'p4', 'p3', 'p2', 'p1', ''].join('\n'))
       }
@@ -30,6 +31,7 @@ describe('basic', () => {
       },
       async () => {
         let tst = await wsrun('echo p3 --stages -r')
+        expect(tst.error).toBeFalsy()
         let output = await echo.getOutput()
         expect(output).toEqual(['p5', 'p4', 'p3', ''].join('\n'))
       }

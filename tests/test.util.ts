@@ -99,7 +99,11 @@ export let echo = {
 let wsrunPath = require.resolve('../build/index')
 
 export async function wsrun(cmd: string) {
-  return cp.spawnSync(wsrunPath, cmd.split(' '), {
-    cwd: testDir
-  })
+  return cp.spawnSync(
+    wsrunPath,
+    cmd.split(' ').concat(['--bin=' + require.resolve('./runner.sh')]),
+    {
+      cwd: testDir
+    }
+  )
 }
