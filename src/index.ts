@@ -4,13 +4,12 @@
  * Tool for running command in yarn workspaces.
  */
 
-import * as Promise from 'bluebird'
 import * as fs from 'fs'
 import * as yargs from 'yargs'
 import * as _ from 'lodash'
 import chalk from 'chalk'
 
-import { RunGraph } from './parallelshell'
+import { RunGraph } from './run-graph'
 import { listPkgs } from './workspace'
 
 yargs
@@ -127,8 +126,6 @@ if (!cmd) {
   yargs.showHelp()
   process.exit(1)
 }
-
-type BuildInstr = { name: string; order: number; cycle: boolean }
 
 const packageJsonWorkspaces = JSON.parse(fs.readFileSync('./package.json', 'utf8')).workspaces
 const packageJsonWorkspacesNohoistFormat = packageJsonWorkspaces && packageJsonWorkspaces.packages

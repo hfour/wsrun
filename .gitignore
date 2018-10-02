@@ -1,4 +1,4 @@
 node_modules
 build
-
+tmp
 yarn-error.log
