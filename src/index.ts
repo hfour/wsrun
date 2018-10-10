@@ -18,7 +18,6 @@ yargs
     'Options:': 'Other Options:'
   })
   .usage('$0 <command> [<package> [package] ...] [options]')
-  .array('package')
   // Note: these examples are chained here as they do not show up otherwise
   // when the required positional <command> is not specified
   .example('$0 clean', 'Runs "yarn clean" in each of the packages in parallel')
@@ -35,19 +34,28 @@ yargs
   .group(['parallel', 'stages', 'serial'], 'Mode (choose one):')
   .options({
     parallel: {
+      boolean: true,
       describe: 'Fully parallel mode (default)'
     },
     stages: {
+      boolean: true,
       describe: 'Run in stages: start with packages that have no deps'
     },
     serial: {
+      boolean: true,
       describe: 'Same as "stages" but with no parallelism at the stage level'
     }
   })
-  .group('recursive', 'Individual Package Options:')
+  .group('recursive', 'Package Options:')
   .options({
+    package: {
+      alias: 'p',
+      describe: 'Run only for these packages',
+      type: 'array'
+    },
     recursive: {
       alias: 'r',
+      boolean: true,
       describe: 'Execute the same script on all of its dependencies, too'
     }
   })
@@ -66,12 +74,15 @@ yargs
   )
   .options({
     'fast-exit': {
+      boolean: true,
       describe: 'If at least one script exits with code > 0, abort'
     },
     'collect-logs': {
+      boolean: true,
       describe: 'Collect per-package output and print it at the end of each script'
     },
     'no-prefix': {
+      boolean: true,
       describe: "Don't prefix output"
     },
     bin: {
@@ -87,10 +98,12 @@ yargs
       describe: 'Skip running the command for that package'
     },
     'exclude-missing': {
+      boolean: true,
       describe:
         'Skip packages which lack the specified command in the scripts section of their package.json'
     },
     report: {
+      boolean: true,
       describe: 'Show an execution report once the command has finished in each package'
     }
   })
@@ -120,9 +133,9 @@ const excludeMissing = argv.excludeMissing || false
 
 const showReport: boolean = argv.report || false
 
-const cmd = argv._[0]
+const cmd = argv._
 
-if (!cmd) {
+if (!cmd.length) {
   yargs.showHelp()
   process.exit(1)
 }
@@ -161,7 +174,8 @@ if (cycle.length > 0) {
   process.exit(1)
 }
 
-let runlist = argv._.slice(1)
+let runlist = argv.package || []
+
 runner.run(cmd, runlist.length > 0 ? runlist : undefined).then(hadError => {
   if (hadError && fastExit) {
     console.error(chalk.red(`Aborted execution due to previous error`))

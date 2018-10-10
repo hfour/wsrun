@@ -70,7 +70,7 @@ export async function withScaffold(opts: ScaffoldOptions, f: () => PromiseLike<v
   try {
     return await f()
   } finally {
-    if (await realExists(testDir)) await rimrafAsync(testDir)
+    //if (await realExists(testDir)) await rimrafAsync(testDir)
   }
 }
 
@@ -79,7 +79,7 @@ export let echo = {
     return Object.assign(json, {
       license: 'MIT',
       scripts: {
-        echo: `echo ${json.name} >> '${testDir}/echo.out'`
+        doecho: `echo ${json.name} $1 >> '${testDir}/echo.out'`
       }
     })
   },
@@ -87,7 +87,7 @@ export let echo = {
     return Object.assign(json, {
       license: 'MIT',
       scripts: {
-        echo: `exit 1`
+        doecho: `exit 1`
       }
     })
   },
@@ -101,7 +101,7 @@ let wsrunPath = require.resolve('../build/index')
 export async function wsrun(cmd: string) {
   return cp.spawnSync(
     wsrunPath,
-    cmd.split(' ').concat(['--bin=' + require.resolve('./runner.sh')]),
+    ['--bin=' + require.resolve('./runner.sh')].concat(cmd.split(' ')),
     {
       cwd: testDir
     }

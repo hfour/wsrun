@@ -87,7 +87,7 @@ export class RunGraph {
     this.children.forEach(ch => ch.stop())
   }
 
-  private lookupOrRun(cmd: string, pkg: string): Bromise<void> {
+  private lookupOrRun(cmd: string[], pkg: string): Bromise<void> {
     let proc = this.procmap.get(pkg)
     if (proc == null) {
       proc = Bromise.resolve().then(() => this.runOne(cmd, pkg))
@@ -131,14 +131,14 @@ export class RunGraph {
     return res
   }
 
-  private makeCmd(cmd: string, pkg: string) {
-    return `${this.opts.bin} ${cmd}`
+  private makeCmd(cmd: string[]) {
+    return [this.opts.bin].concat(cmd)
   }
 
-  private runOne(cmd: string, pkg: string): Bromise<void> {
+  private runOne(cmdArray: string[], pkg: string): Bromise<void> {
     let p = this.jsonMap.get(pkg)
     if (p == null) throw new Error('Unknown package: ' + pkg)
-    let myDeps = Bromise.all(this.allDeps(p).map(d => this.lookupOrRun(cmd, d)))
+    let myDeps = Bromise.all(this.allDeps(p).map(d => this.lookupOrRun(cmdArray, d)))
 
     return myDeps.then(() => {
       this.resultMap.set(pkg, ResultSpecialValues.Pending)
@@ -148,12 +148,12 @@ export class RunGraph {
         this.resultMap.set(pkg, ResultSpecialValues.Excluded)
         return Bromise.resolve()
       }
-      if (this.opts.excludeMissing && (!p || !p.scripts || !p.scripts[cmd])) {
-        console.log(chalk.bold(pkg), 'has no ', cmd, 'script, skipping missing')
+      if (this.opts.excludeMissing && (!p || !p.scripts || !p.scripts[cmdArray[0]])) {
+        console.log(chalk.bold(pkg), 'has no ', cmdArray[0], 'script, skipping missing')
         this.resultMap.set(pkg, ResultSpecialValues.MissingScript)
         return Bromise.resolve()
       }
-      let cmdLine = this.makeCmd(cmd, pkg)
+      let cmdLine = this.makeCmd(cmdArray)
       const child = new CmdProcess(cmdLine, pkg, {
         rejectOnNonZeroExit: this.opts.fastExit,
         collectLogs: this.opts.collectLogs,
@@ -174,7 +174,8 @@ export class RunGraph {
     })
   }
 
-  private checkResultsAndReport(cmd: string, pkgs: string[]) {
+  private checkResultsAndReport(cmdLine: string[], pkgs: string[]) {
+    let cmd = cmdLine.join(' ')
     const pkgsInError: string[] = []
     const pkgsSuccessful: string[] = []
     const pkgsPending: string[] = []
@@ -264,7 +265,7 @@ export class RunGraph {
     return pkgsInError.length > 0
   }
 
-  run(cmd: string, pkgs: string[] = this.pkgJsons.map(p => p.name)) {
+  run(cmd: string[], pkgs: string[] = this.pkgJsons.map(p => p.name)) {
     this.runList = new Set(pkgs)
     return Bromise.all(pkgs.map(pkg => this.lookupOrRun(cmd, pkg)))
       .then(() => Bromise.all(this.children.map(c => c.exitError)))

@@ -47,11 +47,15 @@ export class CmdProcess {
    */
   get exitError() {
     return this.exitCode.then(c => {
-      if (c != 0) throw new Error('`' + this.cmd + '` failed with exit code ' + c)
+      if (c != 0) throw new Error('`' + this.cmdString + '` failed with exit code ' + c)
     })
   }
 
-  constructor(private cmd: string, private pkgName: string, private opts: CmdOptions) {
+  get cmdString() {
+    return this.cmd.join(' ')
+  }
+
+  constructor(private cmd: string[], private pkgName: string, private opts: CmdOptions) {
     this.pkgName = pkgName
     this.opts = opts
 
@@ -87,16 +91,16 @@ export class CmdProcess {
     return this.opts.prefixer ? this.opts.prefixer(this.opts.path, this.pkgName, line) : line
   }
 
-  private _start(cmd: string) {
+  private _start(cmd: string[]) {
     let sh: string
     let args: string[]
 
     // cross platform compatibility
     if (process.platform === 'win32') {
       sh = 'cmd'
-      args = ['/c', cmd]
+      args = ['/c'].concat(cmd)
     } else {
-      ;[sh, ...args] = cmd.split(' ')
+      ;[sh, ...args] = cmd
       //sh = 'bash'
       //shFlag = '-c'
     }

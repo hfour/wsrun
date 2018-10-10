@@ -16,7 +16,7 @@ describe('basic', () => {
         packages: pkgList()
       },
       async () => {
-        let tst = await wsrun('echo --serial')
+        let tst = await wsrun('--serial doecho')
         expect(tst.error).toBeFalsy()
         let output = await echo.getOutput()
         expect(output).toEqual(['p5', 'p4', 'p3', 'p2', 'p1', ''].join('\n'))
@@ -30,10 +30,27 @@ describe('basic', () => {
         packages: pkgList()
       },
       async () => {
-        let tst = await wsrun('echo p3 --stages -r')
+        let tst = await wsrun('-p p3 --stages -r doecho')
         expect(tst.error).toBeFalsy()
         let output = await echo.getOutput()
         expect(output).toEqual(['p5', 'p4', 'p3', ''].join('\n'))
+      }
+    )
+  })
+
+  it('should pass arguments to echo', async () => {
+    await withScaffold(
+      {
+        packages: pkgList()
+      },
+      async () => {
+        let tst = await wsrun('-p p3 --stages -r -- doecho -p hello world')
+        expect(tst.error).toBeFalsy()
+        //console.log(tst.stdout.toString())
+        let output = await echo.getOutput()
+        expect(output).toEqual(
+          ['p5 -p hello world', 'p4 -p hello world', 'p3 -p hello world', ''].join('\n')
+        )
       }
     )
   })
@@ -44,9 +61,9 @@ describe('basic', () => {
         packages: pkgList(true)
       },
       async () => {
-        let tst = await wsrun('echo --stages -r --fast-exit')
+        let tst = await wsrun('--stages -r --fast-exit doecho')
         expect(tst.stderr.toString()).toContain('Aborted execution due to previous error')
-        let output = await echo.getOutput()
+        let output = String(await echo.getOutput())
         expect(output).toEqual(['p5', 'p4', ''].join('\n'))
       }
     )

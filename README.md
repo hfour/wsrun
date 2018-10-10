@@ -1,6 +1,6 @@
 # Workspace script runner
 
-Run npm scripts in a yarn workspace, like a boss.
+Run npm scripts in a yarn workspace.
 
 ### Usage:
 
@@ -31,20 +31,28 @@ Options:
 
 `yarn wsrun watch` will run `yarn watch` on every individual package, in parallel.
 
-`yarn wsrun build --stages` will build all packages, in stages, starting from those that don't
-depend on other packages.
+`yarn wsrun --stages build` will build all packages, in stages, starting from those that don't depend on other packages.
 
-`yarn wsrun watch planc -r` will watch planc and all of its dependencies.
+`yarn wsrun -p planc -r watch` will watch planc and all of its dependencies.
 
-`yarn wsrun watch planc -r --exclude planc` will watch all of planc's dependencies but not planc
+`yarn wsrun -p planc --exclude planc -r watch` will watch all of planc's dependencies but not planc
 
-`yarn wsrun build h4zip -r --stages` will build all the deps. in order, then build h4zip
+`yarn wsrun -p h4zip -r --stages build` will build all the deps. in order, then build h4zip
 
-`yarn wsrun watch planc -r --stages --done-criteria='Compilation complete'` will watch planc deps,
-in order, continuing when command outputs "Compilation complete"
+`yarn wsrun -p planc --stages --done-criteria='Compilation complete' -r watch` will watch planc deps, in order, continuing when command outputs "Compilation complete"
 
-`yarn wsrun clean` will remove "build" folders in every package.
+`yarn wsrun --exclude-missing test` will run the test script only on packages that have it
 
-`yarn wsrun test` will test every package.
+To specify multiple packages, use `-p` several times:
 
-`yarn wsrun test --exclude-missing` will run the test script only on packages that have it
+`yarn wsrun -p h4zip -p planc test` - run tests for both h4zip and planc
+
+If you want to pass additional arguments to the command you can do that by separating the command
+with `--`:
+
+`yarn wsrun -r --stages -- build -p tsconfig.alternative.json` - build all packages in stages with
+an alternative tsconfig.json
+
+When `--skip-missing` is not used, you can pass a command that doesn't exist in the scripts field:
+
+`yarn wsrun -r --stages -- tsc -p tsconfig.alternative.json` - run tsc for all packages with an alternative tsconfig
