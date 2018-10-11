@@ -148,7 +148,7 @@ export class RunGraph {
     let cmdLine = this.makeCmd(cmd.split(' '))
     const child = new CmdProcess(cmdLine, pkg, {
       rejectOnNonZeroExit: false,
-      silenceErrors: true,
+      silent: true,
       collectLogs: this.opts.collectLogs,
       prefixer: this.opts.addPrefix ? this.prefixer : undefined,
       doneCriteria: this.opts.doneCriteria,

@@ -6,7 +6,7 @@ import { defer } from './utils'
 
 export interface CmdOptions {
   rejectOnNonZeroExit: boolean
-  silenceErrors?: boolean
+  silent?: boolean
   collectLogs: boolean
   prefixer?: (basePath: string, pkg: string, line: string) => string
   doneCriteria?: string
@@ -75,7 +75,7 @@ export class CmdProcess {
     this.exitCode.then(code => {
       if (code > 0) {
         const msg = '`' + this.cmd + '` failed with exit code ' + code
-        if (!this.opts.silenceErrors) console.error(msg)
+        if (!this.opts.silent) console.error(msg)
         if (this.opts.rejectOnNonZeroExit) return this._finished.reject(new Error(msg))
       }
       this._finished.resolve()
@@ -124,7 +124,7 @@ export class CmdProcess {
     if (this.cp.stdout)
       this.cp.stdout.pipe(split()).on('data', (line: string) => {
         if (this.opts.collectLogs) stdOutBuffer.push(line)
-        else console.log(this.autoPrefix(line))
+        else if (!this.opts.silent) console.log(this.autoPrefix(line))
         if (this.doneCriteria && this.doneCriteria.test(line)) this._finished.resolve()
       })
     if (this.cp.stderr)

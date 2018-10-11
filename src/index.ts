@@ -22,14 +22,14 @@ yargs
   // when the required positional <command> is not specified
   .example('$0 clean', 'Runs "yarn clean" in each of the packages in parallel')
   .example(
-    '$0 build app -r --stages',
+    '$0 -p app -r --stages build',
     'Runs "yarn build" in app and all of its dependencies in stages, moving up the dependency tree'
   )
   .example(
-    '$0 watch --stages --done-criteria="Finished"',
+    '$0 --stages --done-criteria="Finished" watch',
     'Runs "yarn watch" in each of the packages in stages, continuing when the process outputs "Finished"'
   )
-  .example('$0 test --exclude-missing', 'Runs "yarn test" in all packages that have such a script')
+  .example('$0 --exclude-missing test', 'Runs "yarn test" in all packages that have such a script')
 
   .group(['parallel', 'stages', 'serial'], 'Mode (choose one):')
   .options({
