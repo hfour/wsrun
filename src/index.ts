@@ -12,7 +12,7 @@ import chalk from 'chalk'
 import { RunGraph } from './run-graph'
 import { listPkgs } from './workspace'
 
-yargs
+let yargsParser = yargs
   .wrap(yargs.terminalWidth() - 1)
   .updateStrings({
     'Options:': 'Other Options:'
@@ -116,7 +116,19 @@ yargs
     }
   })
 
-const argv = yargs.argv
+function parsePositionally(yargs: yargs.Argv, cmd: string[]) {
+  let newCmd = cmd.map((c, i) => (c.startsWith('-') ? c : c + ':' + i.toString()))
+  let positional = yargs.parse(newCmd)
+  if (!positional._.length) return yargs.parse(cmd)
+
+  let position = Number(positional._[0].substr(positional._[0].lastIndexOf(':') + 1))
+
+  let result = yargs.parse(cmd.slice(0, position))
+  result._ = result._.concat(cmd.slice(position))
+  return result
+}
+
+const argv = parsePositionally(yargsParser, process.argv.slice(2)) // yargs.argv
 const bin = argv.bin || 'yarn'
 
 let mode: string

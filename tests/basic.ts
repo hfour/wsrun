@@ -40,15 +40,14 @@ describe('basic', () => {
     )
   })
 
-  it('should pass arguments to echo', async () => {
+  it.only('should pass arguments to echo', async () => {
     await withScaffold(
       {
         packages: pkgList()
       },
       async () => {
-        let tst = await wsrun('-p p3 --stages -r -- doecho -p hello world')
+        let tst = await wsrun('-p p3 --stages -r doecho -p hello world')
         expect(tst.error).toBeFalsy()
-        //console.log(tst.stdout.toString())
         let output = await echo.getOutput()
         expect(output).toEqual(
           ['p5 -p hello world', 'p4 -p hello world', 'p3 -p hello world', ''].join('\n')
