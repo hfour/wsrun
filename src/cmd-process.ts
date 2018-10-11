@@ -124,7 +124,7 @@ export class CmdProcess {
     if (this.cp.stdout)
       this.cp.stdout.pipe(split()).on('data', (line: string) => {
         if (this.opts.collectLogs) stdOutBuffer.push(line)
-        else if (!this.opts.silent) console.log(this.autoPrefix(line))
+        else console.log(this.autoPrefix(line))
         if (this.doneCriteria && this.doneCriteria.test(line)) this._finished.resolve()
       })
     if (this.cp.stderr)

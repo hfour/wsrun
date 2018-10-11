@@ -189,7 +189,6 @@ export class RunGraph {
 
       let finished = ifCondtition.then(shouldExecute => {
         if (!shouldExecute) {
-          console.log(chalk.bold(pkg), 'excluded due to if condition')
           this.resultMap.set(pkg, ResultSpecialValues.Excluded)
           return Bromise.resolve(ProcResolution.Excluded)
         }
