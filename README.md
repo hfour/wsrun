@@ -5,26 +5,35 @@ Run npm scripts in a yarn workspace.
 ### Usage:
 
 ```
-wsrun cmd [<package>] [options]
+wsrun [options] <command> [<arg1> <arg2> ...]
 
-Options:
-  Mode (choose one):
-    --parallel                      fully parallel mode (default)
-    --stages                        run in stages; start with packages that have no deps.
-    --serial                        same as "stages", but with no parallelism at the stage level
+Mode (choose one):
+  --parallel  Fully parallel mode (default)                                               [boolean]
+  --stages    Run in stages: start with packages that have no deps                        [boolean]
+  --serial    Same as "stages" but with no parallelism at the stage level                 [boolean]
 
-  Individual package opts:
-    -r, --recursive                 execute the same script on all of its dependencies, too
+Package Options:
+  --recursive, -r  Execute the same script on all of its dependencies, too                [boolean]
 
-  Misc:
-    --fast-exit                     if at least one script exits with code > 0, abort
-    --collect-logs                  collect per-package stdout, print everything at the end, grouped
-    --no-prefix                     don't prefix output
-    --bin=yarn                      which program should we pass the script to (default yarn)
-    --done-criteria=regex           consider the process "done" when output line matches regex
-    --exclude pkgname               skip actually running the script for that package
-    --exclude-missing               skip packages which lack the specified script
-    --report                        show an execution report once all scripts are finished
+Misc Options:
+  --fast-exit        If at least one script exits with code > 0, abort                    [boolean]
+  --collect-logs     Collect per-package output and print it at the end of each script    [boolean]
+  --no-prefix        Don't prefix output                                                  [boolean]
+  --bin              The program to pass the command to                  [string] [default: "yarn"]
+  --done-criteria    Consider a process "done" when an output line matches the specified RegExp
+  --exclude          Skip running the command for that package                             [string]
+  --exclude-missing  Skip packages which lack the specified command in the scripts section of their
+                     package.json                                                         [boolean]
+  --report           Show an execution report once the command has finished in each package
+                                                                                          [boolean]
+
+Other Options:
+  --help          Show help                                                               [boolean]
+  --version       Show version number                                                     [boolean]
+  --package, -p   Run only for these packages                                               [array]
+  --if            Run main command only if this condition command runs successfully
+  --ifDependency  Run main command only if packages dependencies passed the condition (not
+                  available in parallel mode)                                             [boolean]
 ```
 
 ### Examples:
@@ -56,3 +65,13 @@ an alternative tsconfig.json
 When `--skip-missing` is not used, you can pass a command that doesn't exist in the scripts field:
 
 `yarn wsrun -r --stages -- tsc -p tsconfig.alternative.json` - run tsc for all packages with an alternative tsconfig
+
+#### Conditional execution
+
+Conditional execution is supported with `--if` and `--if-dependency`
+
+Examples
+
+`yarn wsrun --stages --if build-needed build` - for each package it will first try `yarn wsrun build-needed` and only if the exit code is zero (success) it will run `yarn wsrun build`
+
+`yarn wsrun --stages --if-build-needed --if-dependency build` - it will run `build` for each package in stages, if either the package's own condition command was success, or any of the dependencies had a successful condition.

@@ -6,6 +6,7 @@ import { defer } from './utils'
 
 export interface CmdOptions {
   rejectOnNonZeroExit: boolean
+  silenceErrors?: boolean
   collectLogs: boolean
   prefixer?: (basePath: string, pkg: string, line: string) => string
   doneCriteria?: string
@@ -74,7 +75,7 @@ export class CmdProcess {
     this.exitCode.then(code => {
       if (code > 0) {
         const msg = '`' + this.cmd + '` failed with exit code ' + code
-        console.error(msg)
+        if (!this.opts.silenceErrors) console.error(msg)
         if (this.opts.rejectOnNonZeroExit) return this._finished.reject(new Error(msg))
       }
       this._finished.resolve()

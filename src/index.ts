@@ -17,7 +17,7 @@ yargs
   .updateStrings({
     'Options:': 'Other Options:'
   })
-  .usage('$0 <command> [<package> [package] ...] [options]')
+  .usage('$0 [options] <command> [<arg1> <arg2> ...] ')
   // Note: these examples are chained here as they do not show up otherwise
   // when the required positional <command> is not specified
   .example('$0 clean', 'Runs "yarn clean" in each of the packages in parallel')
@@ -57,6 +57,14 @@ yargs
       alias: 'r',
       boolean: true,
       describe: 'Execute the same script on all of its dependencies, too'
+    },
+    if: {
+      describe: 'Run main command only if this condition runs successfully'
+    },
+    ifDependency: {
+      describe:
+        'Run main command only if packages dependencies passed the condition (not available in parallel mode)',
+      boolean: true
     }
   })
   .group(
@@ -163,6 +171,8 @@ let runner = new RunGraph(
     exclude,
     excludeMissing,
     showReport,
+    if: argv.if || null,
+    ifDependency: argv.ifDependency || false,
     workspacePath: process.cwd()
   },
   pkgPaths

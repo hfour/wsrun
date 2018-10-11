@@ -6,6 +6,11 @@ import * as Bromise from 'bluebird'
 import chalk from 'chalk'
 import * as path from 'path'
 
+import { PkgJson, Dict } from './workspace'
+import { uniq } from 'lodash'
+import { inherits } from 'util'
+import { CmdProcess } from './cmd-process'
+
 type PromiseFn<T> = () => Bromise<T>
 type PromiseFnRunner = <T>(f: PromiseFn<T>) => Bromise<T>
 
@@ -30,11 +35,6 @@ class Prefixer {
   }
 }
 
-import { PkgJson, Dict } from './workspace'
-import { uniq } from 'lodash'
-import { inherits } from 'util'
-import { CmdProcess } from './cmd-process'
-
 export interface GraphOptions {
   bin: string
   fastExit: boolean
@@ -47,6 +47,8 @@ export interface GraphOptions {
   exclude: string[]
   excludeMissing: boolean
   showReport: boolean
+  if: string
+  ifDependency: boolean
 }
 
 enum ResultSpecialValues {
@@ -56,8 +58,14 @@ enum ResultSpecialValues {
 }
 type Result = number | ResultSpecialValues
 
+enum ProcResolution {
+  Normal = 'Normal',
+  Missing = 'Missing',
+  Excluded = 'Excluded'
+}
+
 export class RunGraph {
-  private procmap = new Map<string, Bromise<any>>()
+  private procmap = new Map<string, Bromise<ProcResolution>>()
   children: CmdProcess[]
   finishedAll!: Bromise<CmdProcess[]>
   private jsonMap = new Map<string, PkgJson>()
@@ -87,11 +95,12 @@ export class RunGraph {
     this.children.forEach(ch => ch.stop())
   }
 
-  private lookupOrRun(cmd: string[], pkg: string): Bromise<void> {
+  private lookupOrRun(cmd: string[], pkg: string): Bromise<ProcResolution> {
     let proc = this.procmap.get(pkg)
     if (proc == null) {
       proc = Bromise.resolve().then(() => this.runOne(cmd, pkg))
       this.procmap.set(pkg, proc)
+      return proc
     }
     return proc
   }
@@ -135,41 +144,74 @@ export class RunGraph {
     return [this.opts.bin].concat(cmd)
   }
 
-  private runOne(cmdArray: string[], pkg: string): Bromise<void> {
+  private runCondition(cmd: string, pkg: string) {
+    let cmdLine = this.makeCmd(cmd.split(' '))
+    const child = new CmdProcess(cmdLine, pkg, {
+      rejectOnNonZeroExit: false,
+      silenceErrors: true,
+      collectLogs: this.opts.collectLogs,
+      prefixer: this.opts.addPrefix ? this.prefixer : undefined,
+      doneCriteria: this.opts.doneCriteria,
+      path: this.pkgPaths[pkg]
+    })
+    let rres = child.exitCode.then(code => code === 0)
+    child.start()
+    return rres
+  }
+
+  private runOne(cmdArray: string[], pkg: string): Bromise<ProcResolution> {
     let p = this.jsonMap.get(pkg)
     if (p == null) throw new Error('Unknown package: ' + pkg)
     let myDeps = Bromise.all(this.allDeps(p).map(d => this.lookupOrRun(cmdArray, d)))
 
-    return myDeps.then(() => {
+    return myDeps.then(depsStatuses => {
       this.resultMap.set(pkg, ResultSpecialValues.Pending)
 
       if (this.opts.exclude.indexOf(pkg) >= 0) {
         console.log(chalk.bold(pkg), 'in exclude list, skipping')
         this.resultMap.set(pkg, ResultSpecialValues.Excluded)
-        return Bromise.resolve()
+        return Bromise.resolve(ProcResolution.Excluded)
       }
       if (this.opts.excludeMissing && (!p || !p.scripts || !p.scripts[cmdArray[0]])) {
         console.log(chalk.bold(pkg), 'has no ', cmdArray[0], 'script, skipping missing')
         this.resultMap.set(pkg, ResultSpecialValues.MissingScript)
-        return Bromise.resolve()
+        return Bromise.resolve(ProcResolution.Missing)
       }
-      let cmdLine = this.makeCmd(cmdArray)
-      const child = new CmdProcess(cmdLine, pkg, {
-        rejectOnNonZeroExit: this.opts.fastExit,
-        collectLogs: this.opts.collectLogs,
-        prefixer: this.opts.addPrefix ? this.prefixer : undefined,
-        doneCriteria: this.opts.doneCriteria,
-        path: this.pkgPaths[pkg]
-      })
-      child.exitCode.then(code => this.resultMap.set(pkg, code))
-      this.children.push(child)
 
-      let finished = this.throat(() => {
-        child.start()
-        return child.finished.thenReturn()
+      let ifCondtition = Bromise.resolve(true)
+
+      if (
+        this.opts.if &&
+        (!this.opts.ifDependency || !depsStatuses.find(ds => ds === ProcResolution.Normal))
+      ) {
+        ifCondtition = this.runCondition(this.opts.if, pkg)
+      }
+
+      let finished = ifCondtition.then(shouldExecute => {
+        if (!shouldExecute) {
+          console.log(chalk.bold(pkg), 'excluded due to if condition')
+          this.resultMap.set(pkg, ResultSpecialValues.Excluded)
+          return Bromise.resolve(ProcResolution.Excluded)
+        }
+
+        let cmdLine = this.makeCmd(cmdArray)
+        const child = new CmdProcess(cmdLine, pkg, {
+          rejectOnNonZeroExit: this.opts.fastExit,
+          collectLogs: this.opts.collectLogs,
+          prefixer: this.opts.addPrefix ? this.prefixer : undefined,
+          doneCriteria: this.opts.doneCriteria,
+          path: this.pkgPaths[pkg]
+        })
+        child.exitCode.then(code => this.resultMap.set(pkg, code))
+        this.children.push(child)
+
+        return this.throat(() => {
+          child.start()
+          return child.finished.thenReturn(ProcResolution.Normal)
+        })
       })
 
-      if (this.opts.mode === 'parallel') finished = Bromise.resolve()
+      if (this.opts.mode === 'parallel') finished = Bromise.resolve(ProcResolution.Normal)
       return finished
     })
   }
