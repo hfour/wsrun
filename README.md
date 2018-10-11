@@ -56,15 +56,15 @@ To specify multiple packages, use `-p` several times:
 
 `yarn wsrun -p h4zip -p planc test` - run tests for both h4zip and planc
 
-If you want to pass additional arguments to the command you can do that by separating the command
-with `--`:
+If you want to pass additional arguments to the command you can do that by adding them after the
+command:
 
-`yarn wsrun -r --stages -- build -p tsconfig.alternative.json` - build all packages in stages with
-an alternative tsconfig.json
+`yarn wsrun -r --stages build -p tsconfig.alternative.json` - build all packages in stages with
+and pass an alternative tsconfig to the build script
 
 When `--skip-missing` is not used, you can pass a command that doesn't exist in the scripts field:
 
-`yarn wsrun -r --stages -- tsc -p tsconfig.alternative.json` - run tsc for all packages with an alternative tsconfig
+`yarn wsrun -r --stages tsc -p tsconfig.alternative.json` - run tsc for all packages with an alternative tsconfig
 
 #### Conditional execution
 
