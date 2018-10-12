@@ -46,25 +46,17 @@ let yargsParser = yargs
       describe: 'Same as "stages" but with no parallelism at the stage level'
     }
   })
-  .group('recursive', 'Package Options:')
+  .group(['recursive', 'package'], 'Package Options:')
   .options({
     package: {
       alias: 'p',
-      describe: 'Run only for these packages',
+      describe: 'Run only for this package. Can be used multiple times.',
       type: 'array'
     },
     recursive: {
       alias: 'r',
       boolean: true,
       describe: 'Execute the same script on all of its dependencies, too'
-    },
-    if: {
-      describe: 'Run main command only if this condition runs successfully'
-    },
-    ifDependency: {
-      describe:
-        'Run main command only if packages dependencies passed the condition (not available in parallel mode)',
-      boolean: true
     }
   })
   .group(
@@ -76,11 +68,21 @@ let yargsParser = yargs
       'done-criteria',
       'exclude',
       'exclude-missing',
-      'report'
+      'report',
+      'if',
+      'ifDependency'
     ],
     'Misc Options:'
   )
   .options({
+    if: {
+      describe: 'Run main command only if this condition runs successfully'
+    },
+    ifDependency: {
+      describe:
+        'Run main command only if packages dependencies passed the condition (not available in parallel mode)',
+      boolean: true
+    },
     'fast-exit': {
       boolean: true,
       describe: 'If at least one script exits with code > 0, abort'

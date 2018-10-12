@@ -70,7 +70,7 @@ export async function withScaffold(opts: ScaffoldOptions, f: () => PromiseLike<v
   try {
     return await f()
   } finally {
-    //if (await realExists(testDir)) await rimrafAsync(testDir)
+    if (await realExists(testDir)) await rimrafAsync(testDir)
   }
 }
 
