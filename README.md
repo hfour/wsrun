@@ -8,32 +8,31 @@ Run npm scripts in a yarn workspace.
 wsrun [options] <command> [<arg1> <arg2> ...]
 
 Mode (choose one):
-  --parallel  Fully parallel mode (default)                                               [boolean]
-  --stages    Run in stages: start with packages that have no deps                        [boolean]
-  --serial    Same as "stages" but with no parallelism at the stage level                 [boolean]
+  --parallel  Fully parallel mode (default)                                                [boolean]
+  --stages    Run in stages: start with packages that have no deps                         [boolean]
+  --serial    Same as "stages" but with no parallelism at the stage level                  [boolean]
 
 Package Options:
-  --recursive, -r  Execute the same script on all of its dependencies, too                [boolean]
+  --recursive, -r  Execute the same script on all of its dependencies, too                 [boolean]
+  --package, -p    Run only for this package. Can be used multiple times.                    [array]
 
 Misc Options:
-  --fast-exit        If at least one script exits with code > 0, abort                    [boolean]
-  --collect-logs     Collect per-package output and print it at the end of each script    [boolean]
-  --no-prefix        Don't prefix output                                                  [boolean]
-  --bin              The program to pass the command to                  [string] [default: "yarn"]
+  --fast-exit        If at least one script exits with code > 0, abort                     [boolean]
+  --collect-logs     Collect per-package output and print it at the end of each script     [boolean]
+  --no-prefix        Don't prefix output                                                   [boolean]
+  --bin              The program to pass the command to                   [string] [default: "yarn"]
   --done-criteria    Consider a process "done" when an output line matches the specified RegExp
-  --exclude          Skip running the command for that package                             [string]
+  --exclude          Skip running the command for that package                              [string]
   --exclude-missing  Skip packages which lack the specified command in the scripts section of their
-                     package.json                                                         [boolean]
-  --report           Show an execution report once the command has finished in each package
-                                                                                          [boolean]
+                     package.json                                                          [boolean]
+  --report           Show an execution report once the command has finished in each package[boolean]
+  --if               Run main command only if this condition runs successfully
+  --ifDependency     Run main command only if packages dependencies passed the condition (not
+                     available in parallel mode)                                           [boolean]
 
 Other Options:
-  --help          Show help                                                               [boolean]
-  --version       Show version number                                                     [boolean]
-  --package, -p   Run only for these packages                                               [array]
-  --if            Run main command only if this condition command runs successfully
-  --ifDependency  Run main command only if packages dependencies passed the condition (not
-                  available in parallel mode)                                             [boolean]
+  --help     Show help                                                                     [boolean]
+  --version  Show version number                                                           [boolean]
 ```
 
 ### Examples:
