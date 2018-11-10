@@ -187,10 +187,13 @@ export class RunGraph {
         ifCondtition = this.runCondition(this.opts.if, pkg)
       }
 
-      let finished = ifCondtition.then(shouldExecute => {
+      let child = ifCondtition.then(shouldExecute => {
         if (!shouldExecute) {
           this.resultMap.set(pkg, ResultSpecialValues.Excluded)
-          return Bromise.resolve(ProcResolution.Excluded)
+          return Bromise.resolve({
+            status: ProcResolution.Excluded,
+            process: null as null | CmdProcess
+          })
         }
 
         let cmdLine = this.makeCmd(cmdArray)
@@ -203,15 +206,20 @@ export class RunGraph {
         })
         child.exitCode.then(code => this.resultMap.set(pkg, code))
         this.children.push(child)
-
-        return this.throat(() => {
-          child.start()
-          return child.finished.thenReturn(ProcResolution.Normal)
-        })
+        return Promise.resolve({ status: ProcResolution.Normal, process: child })
       })
 
-      if (this.opts.mode === 'parallel') finished = Bromise.resolve(ProcResolution.Normal)
-      return finished
+      return child.then(ch => {
+        let processRun = this.throat(() => {
+          if (ch.process) {
+            ch.process.start()
+            return ch.process.finished
+          }
+          return Bromise.resolve()
+        })
+        if (this.opts.mode === 'parallel' || !ch.process) return ch.status
+        else return processRun.thenReturn(ProcResolution.Normal)
+      })
     })
   }
 

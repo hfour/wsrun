@@ -79,7 +79,7 @@ export let echo = {
     return Object.assign(json, {
       license: 'MIT',
       scripts: {
-        doecho: `echo ${json.name} $1 >> '${testDir}/echo.out'`,
+        doecho: `sleep $1; echo ${json.name} $1 >> '${testDir}/echo.out'`,
         condition
       }
     })
