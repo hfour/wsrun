@@ -74,12 +74,15 @@ export class CmdProcess {
 
     this.exitCode.then(code => {
       if (code > 0) {
-        const msg = '`' + this.cmd + '` failed with exit code ' + code
+        const msg = '`' + this.cmdString + '` failed with exit code ' + code
         if (!this.opts.silent) console.error(msg)
         if (this.opts.rejectOnNonZeroExit) return this._finished.reject(new Error(msg))
       }
       this._finished.resolve()
     })
+
+    // ignore if unhandled
+    this._finished.promise.catch(() => {})
   }
 
   stop() {

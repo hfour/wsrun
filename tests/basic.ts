@@ -117,4 +117,21 @@ describe('basic', () => {
       }
     )
   })
+
+  it('should not fast-exit without fast-exit when parallel', async () => {
+    await withScaffold(
+      {
+        packages: pkgList(true)
+      },
+      async () => {
+        let tst = await wsrun('doecho')
+        expect(tst.status).toBeTruthy()
+        let output = String(await echo.getOutput())
+          .split('\n')
+          .sort()
+          .reverse()
+        expect(output).toEqual(['p5', 'p4', 'p2', 'p1', ''])
+      }
+    )
+  })
 })

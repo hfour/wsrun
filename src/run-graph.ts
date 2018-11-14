@@ -316,9 +316,16 @@ export class RunGraph {
 
   run(cmd: string[], pkgs: string[] = this.pkgJsons.map(p => p.name)) {
     this.runList = new Set(pkgs)
-    return Bromise.all(pkgs.map(pkg => this.lookupOrRun(cmd, pkg)))
-      .then(() => Bromise.all(this.children.map(c => c.exitError)))
-      .catch(err => this.opts.fastExit && this.closeAll())
-      .then(() => this.checkResultsAndReport(cmd, pkgs))
+    return (
+      Bromise.all(pkgs.map(pkg => this.lookupOrRun(cmd, pkg)))
+        // Wait for any of them to error
+        .then(() => Bromise.all(this.children.map(c => c.exitError)))
+        // If any of them do, and fastExit is enabled, stop every other
+        .catch(_err => this.opts.fastExit && this.closeAll())
+        // Wait for the exit codes of all processes
+        .then(() => Bromise.all(this.children.map(c => c.exitCode)))
+        // Generate report
+        .then(() => this.checkResultsAndReport(cmd, pkgs))
+    )
   }
 }
