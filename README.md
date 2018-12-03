@@ -15,7 +15,8 @@ Mode (choose one):
 Package Options:
   --recursive, -r  Execute the same script on all of its dependencies, too                 [boolean]
   --package, -p    Run only for this package. Can be used multiple times.                    [array]
-
+  -c               Denotes the end of the package list and the beginning of the command. Can be
+                   used instead of "--"
 Misc Options:
   --fast-exit        If at least one script exits with code > 0, abort                     [boolean]
   --collect-logs     Collect per-package output and print it at the end of each script     [boolean]
@@ -41,19 +42,26 @@ Other Options:
 
 `yarn wsrun --stages build` will build all packages, in stages, starting from those that don't depend on other packages.
 
+#### Specific packages:
+
 `yarn wsrun -p planc -r watch` will watch planc and all of its dependencies.
+
+`yarn wsrun -p planc -c watch` will watch planc only. Note that `-c` is passed here explicitly to
+denote the beginning of the command. This is needed becaus `-p` can accept multiple packages. (`-c`
+can also be substituted with `--` but that generates warnings in yarn)
+
+`yarn wsrun -p h4zip planc -c test` - run tests for both `h4zip` and `planc
 
 `yarn wsrun -p planc --exclude planc -r watch` will watch all of planc's dependencies but not planc
 
-`yarn wsrun -p h4zip -r --stages build` will build all the deps. in order, then build h4zip
+`yarn wsrun -p h4zip -r --stages build` will build all deps of h4zip, in order, then build h4zip
 
-`yarn wsrun -p planc --stages --done-criteria='Compilation complete' -r watch` will watch planc deps, in order, continuing when command outputs "Compilation complete"
+`yarn wsrun -p planc --stages --done-criteria='Compilation complete' -r watch` will watch planc deps,
+in order, continuing when command outputs "Compilation complete"
 
 `yarn wsrun --exclude-missing test` will run the test script only on packages that have it
 
-To specify multiple packages, use `-p` several times:
-
-`yarn wsrun -p h4zip -p planc test` - run tests for both h4zip and planc
+#### Arguments and extra scripts
 
 If you want to pass additional arguments to the command you can do that by adding them after the
 command:

@@ -53,6 +53,11 @@ let yargsParser = yargs
       describe: 'Run only for this package. Can be used multiple times.',
       type: 'array'
     },
+    c: {
+      boolean: true,
+      describe:
+        'Denotes the end of the package list and the beginning of the command. Can be used instead of "--"'
+    },
     recursive: {
       alias: 'r',
       boolean: true,

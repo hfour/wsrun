@@ -75,7 +75,7 @@ export class CmdProcess {
     this.exitCode.then(code => {
       if (code > 0) {
         const msg = '`' + this.cmdString + '` failed with exit code ' + code
-        if (!this.opts.silent) console.error(msg)
+        if (!this.opts.silent) console.error(this.autoPrefix(msg))
         if (this.opts.rejectOnNonZeroExit) return this._finished.reject(new Error(msg))
       }
       this._finished.resolve()
@@ -138,8 +138,10 @@ export class CmdProcess {
       })
     if (this.opts.collectLogs)
       this._closed.promise.then(() => {
-        console.log(stdOutBuffer.map(line => this.autoPrefix(line)).join('\n'))
-        console.error(stdErrBuffer.map(line => this.autoPrefix(line)).join('\n'))
+        if (stdOutBuffer.length)
+          console.log(stdOutBuffer.map(line => this.autoPrefix(line)).join('\n'))
+        if (stdErrBuffer.length)
+          console.error(stdErrBuffer.map(line => this.autoPrefix(line)).join('\n'))
       })
   }
 }
