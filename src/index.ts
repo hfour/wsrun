@@ -120,6 +120,10 @@ let yargsParser = yargs
     report: {
       boolean: true,
       describe: 'Show an execution report once the command has finished in each package'
+    },
+    concurrency: {
+      type: 'number',
+      describe: 'Maximum number of commands to be executed at once'
     }
   })
 
@@ -160,6 +164,8 @@ const excludeMissing = argv.excludeMissing || false
 
 const showReport: boolean = argv.report || false
 
+const concurrency: number | null = typeof argv.concurrency === 'number' ? argv.concurrency : null
+
 const cmd = argv._
 
 if (!cmd.length) {
@@ -192,7 +198,8 @@ let runner = new RunGraph(
     showReport,
     if: argv.if || null,
     ifDependency: argv.ifDependency || false,
-    workspacePath: process.cwd()
+    workspacePath: process.cwd(),
+    concurrency
   },
   pkgPaths
 )
