@@ -49,6 +49,7 @@ export interface GraphOptions {
   showReport: boolean
   if: string
   ifDependency: boolean
+  concurrency: number | null
 }
 
 enum ResultSpecialValues {
@@ -84,8 +85,11 @@ export class RunGraph {
 
     pkgJsons.forEach(j => this.jsonMap.set(j.name, j))
     this.children = []
+    // serial always has a concurrency of 1
     if (this.opts.mode === 'serial') this.throat = mkThroat(1)
-    if (this.opts.mode === 'stages') this.throat = mkThroat(16) // max 16 proc
+    // max 16 proc unless otherwise specified
+    else if (this.opts.mode === 'stages') this.throat = mkThroat(opts.concurrency || 16)
+    else if (opts.concurrency) this.throat = mkThroat(opts.concurrency)
 
     process.on('SIGINT', this.closeAll) // close all children on ctrl+c
   }

@@ -134,4 +134,19 @@ describe('basic', () => {
       }
     )
   })
+
+  it('should limit parallelism with --concurrency', async () => {
+    await withScaffold(
+      {
+        packages: pkgList(false)
+      },
+      async () => {
+        let tst = await wsrun('--parallel --concurrency 1 doecho')
+        expect(tst.status).toBeFalsy()
+        let output = String(await echo.getOutput())
+        // will run in order due to concurrency limit
+        expect(output).toEqual('p5\np4\np3\np2\np1\n')
+      }
+    )
+  })
 })

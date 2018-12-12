@@ -32,8 +32,11 @@ Misc Options:
                      available in parallel mode)                                           [boolean]
 
 Other Options:
-  --help     Show help                                                                     [boolean]
-  --version  Show version number                                                           [boolean]
+  --help         Show help                                                                 [boolean]
+  --version      Show version number                                                       [boolean]
+  -c             Denotes the end of the package list and the beginning of the command. Can be used
+                 instead of "--"                                                           [boolean]
+  --concurrency  Maximum number of commands to be executed at once                         [number]
 ```
 
 ### Examples:
