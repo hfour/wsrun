@@ -10,6 +10,7 @@ import { PkgJson, Dict } from './workspace'
 import { uniq } from 'lodash'
 import { inherits } from 'util'
 import { CmdProcess } from './cmd-process'
+import minimatch = require('minimatch')
 
 type PromiseFn<T> = () => Bromise<T>
 type PromiseFnRunner = <T>(f: PromiseFn<T>) => Bromise<T>
@@ -318,7 +319,12 @@ export class RunGraph {
     return pkgsInError.length > 0
   }
 
-  run(cmd: string[], pkgs: string[] = this.pkgJsons.map(p => p.name)) {
+  expandGlobs(globs: string[]) {
+    return this.pkgJsons.map(p => p.name).filter(name => globs.some(glob => minimatch(name, glob)))
+  }
+
+  run(cmd: string[], globs: string[] = ['*']) {
+    let pkgs = this.expandGlobs(globs)
     this.runList = new Set(pkgs)
     return (
       Bromise.all(pkgs.map(pkg => this.lookupOrRun(cmd, pkg)))
@@ -329,7 +335,7 @@ export class RunGraph {
         // Wait for the exit codes of all processes
         .then(() => Bromise.all(this.children.map(c => c.exitCode)))
         // Generate report
-        .then(() => this.checkResultsAndReport(cmd, pkgs))
+        .then(() => this.checkResultsAndReport(cmd, globs))
     )
   }
 }

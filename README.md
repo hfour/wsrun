@@ -14,9 +14,8 @@ Mode (choose one):
 
 Package Options:
   --recursive, -r  Execute the same script on all of its dependencies, too                 [boolean]
-  --package, -p    Run only for this package. Can be used multiple times.                    [array]
-  -c               Denotes the end of the package list and the beginning of the command. Can be
-                   used instead of "--"
+  --package, -p    Run only for packages matching this glob. Can be used multiple times.     [array]
+
 Misc Options:
   --fast-exit        If at least one script exits with code > 0, abort                     [boolean]
   --collect-logs     Collect per-package output and print it at the end of each script     [boolean]
@@ -36,7 +35,8 @@ Other Options:
   --version      Show version number                                                       [boolean]
   -c             Denotes the end of the package list and the beginning of the command. Can be used
                  instead of "--"                                                           [boolean]
-  --concurrency  Maximum number of commands to be executed at once                         [number]
+  --concurrency  Maximum number of commands to be executed at once                          [number]
+
 ```
 
 ### Examples:
@@ -52,6 +52,10 @@ Other Options:
 `yarn wsrun -p planc -c watch` will watch planc only. Note that `-c` is passed here explicitly to
 denote the beginning of the command. This is needed becaus `-p` can accept multiple packages. (`-c`
 can also be substituted with `--` but that generates warnings in yarn)
+
+`yarn wsrun -p 'app-*-frontend' -r watch` will watch all packages matching the glob
+`'app-*-frontend'` and their dependencies. Globstar and extglobs are supported. Make sure to pass
+the option quoted to prevent bash from trying to expand it!
 
 `yarn wsrun -p h4zip planc -c test` - run tests for both `h4zip` and `planc
 

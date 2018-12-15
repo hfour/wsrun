@@ -1,9 +1,9 @@
 {
   "name": "wsrun",
-  "version": "3.5.0",
+  "version": "3.6.0",
   "description": "executes commands on packages in parallel, but is aware of the dependencies between them",
   "main": "./build/index.js",
-  "author": "Andrej T.",
+  "author": "hfour",
   "license": "MIT",
   "repository": "github:whoeverest/wsrun",
   "jest": {
@@ -41,6 +41,7 @@
     "@types/glob": "^5.0.33",
     "@types/jest": "^21.1.6",
     "@types/lodash": "^4.14.85",
+    "@types/minimatch": "^3.0.3",
     "@types/mkdirp": "^0.5.2",
     "@types/mz": "^0.0.32",
     "@types/node": "^8.0.53",
@@ -68,6 +69,7 @@
     "chalk": "^2.3.0",
     "glob": "^7.1.2",
     "lodash": "^4.17.4",
+    "minimatch": "^3.0.4",
     "split": "^1.0.1",
     "throat": "^4.1.0",
     "yargs": "^10.0.3"

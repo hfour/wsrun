@@ -50,7 +50,7 @@ let yargsParser = yargs
   .options({
     package: {
       alias: 'p',
-      describe: 'Run only for this package. Can be used multiple times.',
+      describe: 'Run only for packages matching this glob. Can be used multiple times.',
       type: 'array'
     },
     c: {

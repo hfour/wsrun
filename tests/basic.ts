@@ -149,4 +149,22 @@ describe('basic', () => {
       }
     )
   })
+
+  it('should support globs', async () => {
+    await withScaffold(
+      {
+        packages: [
+          echo.makePkg({ name: 'app-x-frontend', dependencies: {} }),
+          echo.makePkg({ name: 'app-x-backend', dependencies: {} }),
+          echo.makePkg({ name: 'app-y-frontend', dependencies: { 'app-x-frontend': '*' } })
+        ]
+      },
+      async () => {
+        let tst = await wsrun('-p app-*-frontend --serial doecho')
+        expect(tst.status).toBeFalsy()
+        let output = String(await echo.getOutput())
+        expect(output).toEqual('app-x-frontend\napp-y-frontend\n')
+      }
+    )
+  })
 })
