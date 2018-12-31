@@ -34,7 +34,7 @@ export function listPkgs(wsRoot: string, globs: string[]) {
       const pkgJsonPath = path.resolve(wsRoot, f, 'package.json')
       const hasPkgJson = fs.existsSync(pkgJsonPath)
       if (!hasPkgJson) {
-        console.warn(`Warning: ${f} is a directory, but has no package.json`)
+        // console.warn(`Warning: ${f} is a directory, but has no package.json`)
         return
       }
       const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'))

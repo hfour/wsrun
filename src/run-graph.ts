@@ -323,7 +323,7 @@ export class RunGraph {
     return this.pkgJsons.map(p => p.name).filter(name => globs.some(glob => minimatch(name, glob)))
   }
 
-  run(cmd: string[], globs: string[] = ['*']) {
+  run(cmd: string[], globs: string[] = ['**/*']) {
     let pkgs = this.expandGlobs(globs)
     this.runList = new Set(pkgs)
     return (
@@ -335,7 +335,7 @@ export class RunGraph {
         // Wait for the exit codes of all processes
         .then(() => Bromise.all(this.children.map(c => c.exitCode)))
         // Generate report
-        .then(() => this.checkResultsAndReport(cmd, globs))
+        .then(() => this.checkResultsAndReport(cmd, pkgs))
     )
   }
 }

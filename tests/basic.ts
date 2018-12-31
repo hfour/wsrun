@@ -167,4 +167,21 @@ describe('basic', () => {
       }
     )
   })
+
+  it('should not break with namespaced pkgs', async () => {
+    await withScaffold(
+      {
+        packages: [
+          echo.makePkg({ name: '@x/p1', path: 'packages/p1', dependencies: {} }),
+          echo.makePkg({ name: '@x/p2', path: 'packages/p2', dependencies: { '@x/p1': '*' } })
+        ]
+      },
+      async () => {
+        let tst = await wsrun('--serial doecho')
+        expect(tst.status).toBeFalsy()
+        let output = String(await echo.getOutput())
+        expect(output).toEqual('@x/p1\n@x/p2\n')
+      }
+    )
+  })
 })
