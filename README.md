@@ -50,7 +50,7 @@ Other Options:
 `yarn wsrun -p planc -r watch` will watch planc and all of its dependencies.
 
 `yarn wsrun -p planc -c watch` will watch planc only. Note that `-c` is passed here explicitly to
-denote the beginning of the command. This is needed becaus `-p` can accept multiple packages. (`-c`
+denote the beginning of the command. This is needed because `-p` can accept multiple packages. (`-c`
 can also be substituted with `--` but that generates warnings in yarn)
 
 `yarn wsrun -p 'app-*-frontend' -r watch` will watch all packages matching the glob
