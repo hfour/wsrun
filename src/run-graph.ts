@@ -178,7 +178,7 @@ export class RunGraph {
         return Bromise.resolve(ProcResolution.Excluded)
       }
       if (this.opts.excludeMissing && (!p || !p.scripts || !p.scripts[cmdArray[0]])) {
-        console.log(chalk.bold(pkg), 'has no ', cmdArray[0], 'script, skipping missing')
+        console.log(chalk.bold(pkg), 'has no', cmdArray[0], 'script, skipping missing')
         this.resultMap.set(pkg, ResultSpecialValues.MissingScript)
         return Bromise.resolve(ProcResolution.Missing)
       }
