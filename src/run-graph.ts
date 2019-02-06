@@ -1,12 +1,9 @@
-/**
- * Remove me.
- */
-
 import * as Bromise from 'bluebird'
 import chalk from 'chalk'
 import * as path from 'path'
 
 import { PkgJson, Dict } from './workspace'
+import { ResultSpecialValues, Result, ProcResolution } from './enums';
 import { uniq } from 'lodash'
 import { inherits } from 'util'
 import { CmdProcess } from './cmd-process'
@@ -51,19 +48,6 @@ export interface GraphOptions {
   if: string
   ifDependency: boolean
   concurrency: number | null
-}
-
-enum ResultSpecialValues {
-  Pending = 'PENDING',
-  Excluded = 'EXCLUDED',
-  MissingScript = 'MISSING_SCRIPT'
-}
-type Result = number | ResultSpecialValues
-
-enum ProcResolution {
-  Normal = 'Normal',
-  Missing = 'Missing',
-  Excluded = 'Excluded'
 }
 
 export class RunGraph {
@@ -332,8 +316,8 @@ export class RunGraph {
         .then(() => Bromise.all(this.children.map(c => c.exitError)))
         // If any of them do, and fastExit is enabled, stop every other
         .catch(_err => this.opts.fastExit && this.closeAll())
-        // Wait for the exit codes of all processes
-        .then(() => Bromise.all(this.children.map(c => c.exitCode)))
+        // Wait for the all the processes to finish
+        .then(() => Bromise.all(this.children.map(c => c.result)))
         // Generate report
         .then(() => this.checkResultsAndReport(cmd, pkgs))
     )
