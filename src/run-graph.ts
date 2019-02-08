@@ -4,13 +4,12 @@
 
 import * as Bromise from 'bluebird'
 import chalk from 'chalk'
-import * as path from 'path'
 
 import { PkgJson, Dict } from './workspace'
 import { uniq } from 'lodash'
-import { inherits } from 'util'
 import { CmdProcess } from './cmd-process'
 import minimatch = require('minimatch')
+import { fixPaths } from './fix-paths'
 
 type PromiseFn<T> = () => Bromise<T>
 type PromiseFnRunner = <T>(f: PromiseFn<T>) => Bromise<T>
@@ -30,9 +29,7 @@ class Prefixer {
   }
 
   processFilePaths(basePath: string, line: string) {
-    return line.replace(/(([^/\s'"*]+[/]){1,})([^/'"*]+)\.[0-9a-zA-Z]{1,6}/, m =>
-      path.relative(this.wspath, path.resolve(basePath, m))
-    )
+    return fixPaths(this.wspath, basePath, line)
   }
 }
 
