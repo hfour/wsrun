@@ -1,7 +1,9 @@
 import { ChildProcess, spawn } from 'child_process'
+import * as Bromise from 'bluebird'
 
 import originalSplit = require('split')
 
+import { Result, ResultSpecialValues } from './enums';
 import { defer } from './utils'
 
 export interface CmdOptions {
@@ -23,6 +25,7 @@ export class CmdProcess {
   private _closed = defer<number>()
   private _finished = defer<void>()
   private _exitCode = defer<number>()
+  private _cancelled = defer<Result>()
 
   private doneCriteria?: RegExp
 
@@ -41,6 +44,10 @@ export class CmdProcess {
    */
   get exitCode() {
     return this._exitCode.promise
+  }
+
+  get result() {
+    return Bromise.race([this._exitCode.promise, this._cancelled.promise]);
   }
 
   /**
@@ -82,13 +89,16 @@ export class CmdProcess {
     })
 
     // ignore if unhandled
-    this._finished.promise.catch(() => {})
+    this._finished.promise.catch(() => { })
   }
 
   stop() {
-    this.cp.removeAllListeners('close')
-    this.cp.removeAllListeners('exit')
-    this.cp.kill('SIGINT')
+    if (this.cp) {
+      this.cp.removeAllListeners('close')
+      this.cp.removeAllListeners('exit')
+      this.cp.kill('SIGINT')
+    }
+    this._cancelled.resolve(ResultSpecialValues.Cancelled);
   }
 
   private autoPrefix(line: string) {
