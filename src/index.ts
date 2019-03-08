@@ -17,7 +17,7 @@ let yargsParser = yargs
   .updateStrings({
     'Options:': 'Other Options:'
   })
-  .usage('$0 [options] <command> [<arg1> <arg2> ...] ')
+  .usage('$0 [options] -c <command> [<arg1> <arg2> ...] ')
   // Note: these examples are chained here as they do not show up otherwise
   // when the required positional <command> is not specified
   .example('$0 clean', 'Runs "yarn clean" in each of the packages in parallel')

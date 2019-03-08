@@ -5,7 +5,7 @@ Run npm scripts in a yarn workspace.
 ### Usage:
 
 ```
-wsrun [options] <command> [<arg1> <arg2> ...]
+wsrun [options] -c <command> [<arg1> <arg2> ...]
 
 Mode (choose one):
   --parallel  Fully parallel mode (default)                                                [boolean]
@@ -33,8 +33,7 @@ Misc Options:
 Other Options:
   --help         Show help                                                                 [boolean]
   --version      Show version number                                                       [boolean]
-  -c             Denotes the end of the package list and the beginning of the command. Can be used
-                 instead of "--"                                                           [boolean]
+  -c             Denotes the end of the package list and the beginning of the command.
   --concurrency  Maximum number of commands to be executed at once                          [number]
 
 ```
