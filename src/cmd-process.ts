@@ -127,7 +127,7 @@ export class CmdProcess {
       cwd:
         this.opts.path ||
         ((process.versions.node < '8.0.0' ? process.cwd : process.cwd()) as string),
-      env: Object.assign(process.env, { FORCE_COLOR: process.stdout.isTTY }),
+      env: Object.assign(process.env, { FORCE_COLOR: process.stdout.isTTY ? '1' : '0' }),
       stdio:
         this.opts.collectLogs || this.opts.prefixer != null || this.opts.doneCriteria
           ? 'pipe'
