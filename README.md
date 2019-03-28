@@ -63,7 +63,7 @@ the option quoted to prevent bash from trying to expand it!
 `yarn wsrun -p h4zip -r --stages build` will build all deps of h4zip, in order, then build h4zip
 
 `yarn wsrun -p planc --stages --done-criteria='Compilation complete' -r watch` will watch planc deps,
-in order, continuing when command outputs "Compilation complete"
+in order, continuing when command outputs a line containing "Compilation complete"
 
 `yarn wsrun --exclude-missing test` will run the test script only on packages that have it
 
