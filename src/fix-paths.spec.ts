@@ -1,5 +1,6 @@
 import 'jest'
 import { fixPaths } from './fix-paths'
+import chalk from 'chalk';
 
 describe('fix paths', () => {
   it('works', () => {
@@ -24,5 +25,10 @@ describe('fix paths', () => {
   it('applies relative paths', () => {
     let res = fixPaths('/a/b/c', '/a/b/c/packages/p', 'Testing ../src/test.ts:12')
     expect(res).toEqual('Testing packages/src/test.ts:12')
+  })
+
+  it('works with color codes', () => {
+    let res = fixPaths('/a/b/c', '/a/b/c/packages/p', 'Testing ' + chalk.blue('src/test.ts:12'))
+    expect(res).toEqual('Testing ' + chalk.blue('packages/p/src/test.ts:12'))
   })
 })
