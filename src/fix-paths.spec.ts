@@ -17,6 +17,12 @@ describe('fix paths', () => {
     expect(res).toEqual('Testing /src/test.ts:12')
   })
 
+  it('ignores absolute paths that contain @', () => {
+    let logLine = 'at (/Thing/src/node_modules/@h4bff/backend/src/rpc/serviceRegistry.ts:54:54)';
+    let res = fixPaths('/Thing/src/','/Thing/src/packages/app-lib-ca-backend', logLine)
+    expect(res).toEqual(logLine)
+  })
+
   it('does not do absolute paths without brackets', () => {
     let res = fixPaths('/a/b/c', '/a/b/c/packages/p', 'Testing /src/test.ts:12')
     expect(res).toEqual('Testing /src/test.ts:12')
