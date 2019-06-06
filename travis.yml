@@ -1,0 +1,4 @@
+dist: xenial
+language: node_js
+node_js: 'lts/*'
+script: yarn build && yarn test
