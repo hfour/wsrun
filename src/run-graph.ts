@@ -2,7 +2,7 @@ import * as Bromise from 'bluebird'
 import chalk from 'chalk'
 
 import { PkgJson, Dict } from './workspace'
-import { ResultSpecialValues, Result, ProcResolution } from './enums';
+import { ResultSpecialValues, Result, ProcResolution } from './enums'
 import { uniq } from 'lodash'
 import { CmdProcess } from './cmd-process'
 import minimatch = require('minimatch')
@@ -35,6 +35,7 @@ export interface GraphOptions {
   fastExit: boolean
   collectLogs: boolean
   addPrefix: boolean
+  rewritePaths: boolean
   mode: 'parallel' | 'serial' | 'stages'
   recursive: boolean
   doneCriteria: string | undefined
@@ -56,6 +57,7 @@ export class RunGraph {
   private resultMap = new Map<string, Result>()
   private throat: PromiseFnRunner = passThrough
   prefixer = new Prefixer(this.opts.workspacePath).prefixer
+  pathRewriter = fixPaths
 
   constructor(
     public pkgJsons: PkgJson[],
@@ -187,6 +189,7 @@ export class RunGraph {
           rejectOnNonZeroExit: this.opts.fastExit,
           collectLogs: this.opts.collectLogs,
           prefixer: this.opts.addPrefix ? this.prefixer : undefined,
+          pathRewriter: this.opts.rewritePaths ? this.pathRewriter : undefined,
           doneCriteria: this.opts.doneCriteria,
           path: this.pkgPaths[pkg]
         })

@@ -69,6 +69,7 @@ let yargsParser = yargs
       'fast-exit',
       'collect-logs',
       'no-prefix',
+      'no-path-rewrite',
       'bin',
       'done-criteria',
       'exclude',
@@ -99,6 +100,11 @@ let yargsParser = yargs
     'no-prefix': {
       boolean: true,
       describe: "Don't prefix output"
+    },
+    'no-path-rewrite': {
+      boolean: true,
+      describe:
+        "Don't rewrite relative paths in the standard output, leaving them relative to the package folder"
     },
     bin: {
       default: 'yarn',
@@ -156,6 +162,7 @@ const recursive: boolean = argv.recursive || argv.r || false
 const fastExit: boolean = argv.fastExit || false
 const collectLogs: boolean = argv.collectLogs || false
 const addPrefix: boolean = argv.prefix === undefined ? true : false
+const rewritePaths: boolean = argv.rewritePaths === undefined ? true : false
 const doneCriteria: string = argv.doneCriteria
 const exclude: string[] =
   (argv.exclude && (Array.isArray(argv.exclude) ? argv.exclude : [argv.exclude])) || []
@@ -190,6 +197,7 @@ let runner = new RunGraph(
     fastExit,
     collectLogs,
     addPrefix,
+    rewritePaths,
     mode: mode as any,
     recursive,
     doneCriteria,

@@ -3,7 +3,7 @@ import * as Bromise from 'bluebird'
 
 import originalSplit = require('split')
 
-import { Result, ResultSpecialValues } from './enums';
+import { Result, ResultSpecialValues } from './enums'
 import { defer } from './utils'
 
 export interface CmdOptions {
@@ -11,6 +11,7 @@ export interface CmdOptions {
   silent?: boolean
   collectLogs: boolean
   prefixer?: (basePath: string, pkg: string, line: string) => string
+  pathRewriter?: (basePath: string, pkg: string, line: string) => string
   doneCriteria?: string
   path: string
 }
@@ -47,7 +48,7 @@ export class CmdProcess {
   }
 
   get result() {
-    return Bromise.race([this._exitCode.promise, this._cancelled.promise]);
+    return Bromise.race([this._exitCode.promise, this._cancelled.promise])
   }
 
   /**
@@ -82,14 +83,14 @@ export class CmdProcess {
     this.exitCode.then(code => {
       if (code > 0) {
         const msg = '`' + this.cmdString + '` failed with exit code ' + code
-        if (!this.opts.silent) console.error(this.autoPrefix(msg))
+        if (!this.opts.silent) console.error(this.autoAugmentLine(msg))
         if (this.opts.rejectOnNonZeroExit) return this._finished.reject(new Error(msg))
       }
       this._finished.resolve()
     })
 
     // ignore if unhandled
-    this._finished.promise.catch(() => { })
+    this._finished.promise.catch(() => {})
   }
 
   stop() {
@@ -98,11 +99,23 @@ export class CmdProcess {
       this.cp.removeAllListeners('exit')
       this.cp.kill('SIGINT')
     }
-    this._cancelled.resolve(ResultSpecialValues.Cancelled);
+    this._cancelled.resolve(ResultSpecialValues.Cancelled)
   }
 
   private autoPrefix(line: string) {
     return this.opts.prefixer ? this.opts.prefixer(this.opts.path, this.pkgName, line) : line
+  }
+
+  private autoPathRewrite(line: string) {
+    return this.opts.pathRewriter
+      ? this.opts.pathRewriter(this.opts.path, this.pkgName, line)
+      : line
+  }
+
+  private autoAugmentLine(line: string) {
+    line = this.autoPathRewrite(line)
+    line = this.autoPrefix(line)
+    return line
   }
 
   private _start(cmd: string[]) {
@@ -137,21 +150,21 @@ export class CmdProcess {
     if (this.cp.stdout)
       this.cp.stdout.pipe(split()).on('data', (line: string) => {
         if (this.opts.collectLogs) stdOutBuffer.push(line)
-        else console.log(this.autoPrefix(line))
+        else console.log(this.autoAugmentLine(line))
         if (this.doneCriteria && this.doneCriteria.test(line)) this._finished.resolve()
       })
     if (this.cp.stderr)
       this.cp.stderr.pipe(split()).on('data', (line: string) => {
         if (this.opts.collectLogs) stdErrBuffer.push(line)
-        else console.error(this.autoPrefix(line))
+        else console.error(this.autoAugmentLine(line))
         if (this.doneCriteria && this.doneCriteria.test(line)) this._finished.resolve()
       })
     if (this.opts.collectLogs)
       this._closed.promise.then(() => {
         if (stdOutBuffer.length)
-          console.log(stdOutBuffer.map(line => this.autoPrefix(line)).join('\n'))
+          console.log(stdOutBuffer.map(line => this.autoAugmentLine(line)).join('\n'))
         if (stdErrBuffer.length)
-          console.error(stdErrBuffer.map(line => this.autoPrefix(line)).join('\n'))
+          console.error(stdErrBuffer.map(line => this.autoAugmentLine(line)).join('\n'))
       })
   }
 }
