@@ -31,6 +31,7 @@ let yargsParser = yargs
   )
   .example('$0 --exclude-missing test', 'Runs "yarn test" in all packages that have such a script')
 
+  .env('WSRUN')
   .group(['parallel', 'stages', 'serial'], 'Mode (choose one):')
   .options({
     parallel: {
@@ -101,10 +102,10 @@ let yargsParser = yargs
       boolean: true,
       describe: "Don't prefix output"
     },
-    'no-path-rewrite': {
+    'rewrite-paths': {
       boolean: true,
       describe:
-        "Don't rewrite relative paths in the standard output, leaving them relative to the package folder"
+        'Rewrite relative paths in the standard output, by prepending the <root_folder>/<package_name>.'
     },
     bin: {
       default: 'yarn',
@@ -162,7 +163,7 @@ const recursive: boolean = argv.recursive || argv.r || false
 const fastExit: boolean = argv.fastExit || false
 const collectLogs: boolean = argv.collectLogs || false
 const addPrefix: boolean = argv.prefix === undefined ? true : false
-const rewritePaths: boolean = argv.rewritePaths === undefined ? true : false
+const rewritePaths: boolean = argv.rewritePaths
 const doneCriteria: string = argv.doneCriteria
 const exclude: string[] =
   (argv.exclude && (Array.isArray(argv.exclude) ? argv.exclude : [argv.exclude])) || []
