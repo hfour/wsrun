@@ -20,7 +20,7 @@ let rimrafAsync = promisify(rimraf)
 let mkdirpAsync = promisify(mkdirp)
 
 export type PackageJson = {
-  name: string
+  name?: string
   path?: string
   dependencies?: { [name: string]: string }
   devDependencies?: { [name: string]: string }
