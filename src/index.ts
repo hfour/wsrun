@@ -186,7 +186,14 @@ const packageJsonWorkspacesNohoistFormat = packageJsonWorkspaces && packageJsonW
 
 const workspaceGlobs = packageJsonWorkspacesNohoistFormat || packageJsonWorkspaces || ['packages/*']
 
-const pkgs = listPkgs('./', workspaceGlobs)
+let pkgs
+try {
+  pkgs = listPkgs('./', workspaceGlobs)
+} catch (err) {
+  console.error(chalk.red(`\nERROR: ${err.message}`))
+  process.exit(1)
+}
+
 const pkgPaths = _.mapValues(_.keyBy(pkgs, p => p.json.name), v => v.path)
 
 const pkgJsons = _.map(pkgs, pkg => pkg.json)

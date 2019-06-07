@@ -185,7 +185,7 @@ describe('basic', () => {
     )
   })
 
-  it.only('should not rewrite paths by default', async () => {
+  it('should not rewrite paths by default', async () => {
     await withScaffold(
       {
         packages: [echo.makePkg({ name: 'app-x-frontend', dependencies: {} })]
@@ -197,6 +197,21 @@ describe('basic', () => {
           WSRUN_NO_PREFIX: 'true' // no worky
         })
         console.log(tst.output.toString())
+      }
+    )
+  })
+
+  it('should show an error for pkgs without name', async () => {
+    await withScaffold(
+      {
+        packages: [
+          echo.makePkg({ path: 'packages/p1', dependencies: {} }),
+        ]
+      },
+      async () => {
+        let tst = await wsrun('doecho')
+        expect(tst.status).toBeTruthy()
+        expect(String(tst.output[2])).toEqual('\nERROR: Package in directory packages/p1 has no name in package.json\n')
       }
     )
   })

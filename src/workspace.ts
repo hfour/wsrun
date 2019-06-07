@@ -38,6 +38,7 @@ export function listPkgs(wsRoot: string, globs: string[]) {
         return
       }
       const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'))
+      if (!pkgJson.name) throw new Error(`Package in directory ${f} has no name in package.json`)
       packages[pkgJson.name] = {
         path: path.join(wsRoot, f),
         json: pkgJson
