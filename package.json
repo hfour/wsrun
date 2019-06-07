@@ -59,9 +59,9 @@
     "typescript": "^3.1.1"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && chmod +x ./build/index.js",
     "watch": "tsc -w",
-    "test": "jest",
+    "test": "yarn build && jest",
     "test:watch": "jest --watch",
     "dev": "run-p test:watch watch",
     "prepublish": "tsc"
