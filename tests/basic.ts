@@ -184,4 +184,20 @@ describe('basic', () => {
       }
     )
   })
+
+  it.only('should not rewrite paths by default', async () => {
+    await withScaffold(
+      {
+        packages: [echo.makePkg({ name: 'app-x-frontend', dependencies: {} })]
+      },
+      async () => {
+        // no worky
+        let tst = await wsrun('printthis --rewrite-paths app-x-frontend/a/b', {
+          WSRUN_REWRITE_PATHS: 'true', // no worky
+          WSRUN_NO_PREFIX: 'true' // no worky
+        })
+        console.log(tst.output.toString())
+      }
+    )
+  })
 })

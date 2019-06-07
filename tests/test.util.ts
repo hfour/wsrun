@@ -75,12 +75,13 @@ export async function withScaffold(opts: ScaffoldOptions, f: () => PromiseLike<v
 }
 
 export let echo = {
-  makePkg(json: PackageJson, condition: string = '') {
+  makePkg(json: PackageJson, condition: string = '', printthis = '') {
     return Object.assign(json, {
       license: 'MIT',
       scripts: {
         doecho: `sleep $1; echo ${json.name} $1 >> '${testDir}/echo.out'`,
-        condition
+        condition,
+        printthis: `echo ${printthis}`
       }
     })
   },
@@ -99,9 +100,10 @@ export let echo = {
 
 let wsrunPath = require.resolve('../build/index')
 
-export async function wsrun(cmd: string | string[]) {
+export async function wsrun(cmd: string | string[], env: { [key: string]: string } = {}) {
   if (typeof cmd === 'string') cmd = cmd.split(' ')
   return cp.spawnSync(wsrunPath, ['--bin=' + require.resolve('./runner.sh')].concat(cmd), {
-    cwd: testDir
+    cwd: testDir,
+    env
   })
 }
