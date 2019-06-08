@@ -108,6 +108,6 @@ export async function wsrun(cmd: string | string[], env: { [key: string]: string
   if (typeof cmd === 'string') cmd = cmd.split(' ')
   return cp.spawnSync(wsrunPath, ['--bin=' + require.resolve('./runner.sh')].concat(cmd), {
     cwd: testDir,
-    env
+    env: { ...process.env, ...env }
   })
 }
