@@ -14,6 +14,8 @@ import * as fs from 'mz/fs'
 import * as rimraf from 'rimraf'
 import * as cp from 'child_process'
 import * as mkdirp from 'mkdirp'
+import * as path from 'path'
+
 import { promisify } from 'util'
 
 let rimrafAsync = promisify(rimraf)
@@ -98,7 +100,9 @@ export let echo = {
   }
 }
 
-let wsrunPath = require.resolve('../bin/wsrun')
+let pkgPath = path.resolve(__dirname, '..')
+let binPath = require('../package.json').bin.wsrun
+let wsrunPath = path.resolve(pkgPath, binPath)
 
 export async function wsrun(cmd: string | string[], env: { [key: string]: string } = {}) {
   if (typeof cmd === 'string') cmd = cmd.split(' ')
