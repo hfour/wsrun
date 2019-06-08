@@ -197,11 +197,7 @@ describe('basic', () => {
         ]
       },
       async () => {
-        // no worky
-        let tst = await wsrun('printthis', {
-          WSRUN_REWRITE_PATHS: 'true' // no worky
-          // WSRUN_NO_PREFIX: '1' // no worky
-        })
+        let tst = await wsrun('printthis', { WSRUN_REWRITE_PATHS: 'true' })
         expect(tst.output.toString()).toContain('app-x-frontend/src/index.ts')
       }
     )
