@@ -8,16 +8,7 @@
   "repository": "github:whoeverest/wsrun",
   "jest": {
     "verbose": false,
-    "transform": {
-      "^.+\\.tsx?$": "ts-jest"
-    },
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js",
-      "jsx",
-      "json"
-    ],
+    "preset": "ts-jest",
     "testPathIgnorePatterns": [
       "<rootDir>/tmp",
       "<rootDir>/node_modules/",
@@ -33,7 +24,7 @@
     ]
   },
   "bin": {
-    "wsrun": "./build/index.js"
+    "wsrun": "./bin/wsrun"
   },
   "files": [
     "build/"
@@ -59,7 +50,7 @@
     "typescript": "^3.1.1"
   },
   "scripts": {
-    "build": "tsc && chmod +x ./build/index.js",
+    "build": "tsc",
     "watch": "tsc -w",
     "test": "yarn build && jest",
     "test:watch": "jest --watch",

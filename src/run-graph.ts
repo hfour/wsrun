@@ -64,6 +64,7 @@ export class RunGraph {
     public opts: GraphOptions,
     public pkgPaths: Dict<string>
   ) {
+
     this.checkResultsAndReport = this.checkResultsAndReport.bind(this)
     this.closeAll = this.closeAll.bind(this)
 

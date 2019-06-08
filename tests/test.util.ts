@@ -98,7 +98,7 @@ export let echo = {
   }
 }
 
-let wsrunPath = require.resolve('../build/index')
+let wsrunPath = require.resolve('../bin/wsrun')
 
 export async function wsrun(cmd: string | string[], env: { [key: string]: string } = {}) {
   if (typeof cmd === 'string') cmd = cmd.split(' ')

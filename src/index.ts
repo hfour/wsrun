@@ -13,6 +13,7 @@ import { RunGraph } from './run-graph'
 import { listPkgs } from './workspace'
 
 let yargsParser = yargs
+  .env('WSRUN')
   .wrap(yargs.terminalWidth() - 1)
   .updateStrings({
     'Options:': 'Other Options:'
@@ -30,8 +31,6 @@ let yargsParser = yargs
     'Runs "yarn watch" in each of the packages in stages, continuing when the process outputs "Finished"'
   )
   .example('$0 --exclude-missing test', 'Runs "yarn test" in all packages that have such a script')
-
-  .env('WSRUN')
   .group(['parallel', 'stages', 'serial'], 'Mode (choose one):')
   .options({
     parallel: {
@@ -163,7 +162,8 @@ const recursive: boolean = argv.recursive || argv.r || false
 const fastExit: boolean = argv.fastExit || false
 const collectLogs: boolean = argv.collectLogs || false
 const addPrefix: boolean = argv.prefix === undefined ? true : false
-const rewritePaths: boolean = argv.rewritePaths
+console.log(argv)
+const rewritePaths: boolean = Boolean(argv.rewritePaths)
 const doneCriteria: string = argv.doneCriteria
 const exclude: string[] =
   (argv.exclude && (Array.isArray(argv.exclude) ? argv.exclude : [argv.exclude])) || []
