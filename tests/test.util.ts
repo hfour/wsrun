@@ -14,6 +14,8 @@ import * as fs from 'mz/fs'
 import * as rimraf from 'rimraf'
 import * as cp from 'child_process'
 import * as mkdirp from 'mkdirp'
+import * as path from 'path'
+
 import { promisify } from 'util'
 
 let rimrafAsync = promisify(rimraf)
@@ -75,12 +77,13 @@ export async function withScaffold(opts: ScaffoldOptions, f: () => PromiseLike<v
 }
 
 export let echo = {
-  makePkg(json: PackageJson, condition: string = '') {
+  makePkg(json: PackageJson, condition: string = '', printthis = '') {
     return Object.assign(json, {
       license: 'MIT',
       scripts: {
         doecho: `sleep $1; echo ${json.name} $1 >> '${testDir}/echo.out'`,
-        condition
+        condition,
+        printthis: `echo ${printthis}`
       }
     })
   },
@@ -97,11 +100,14 @@ export let echo = {
   }
 }
 
-let wsrunPath = require.resolve('../build/index')
+let pkgPath = path.resolve(__dirname, '..')
+let binPath = require('../package.json').bin.wsrun
+let wsrunPath = path.resolve(pkgPath, binPath)
 
-export async function wsrun(cmd: string | string[]) {
+export async function wsrun(cmd: string | string[], env: { [key: string]: string } = {}) {
   if (typeof cmd === 'string') cmd = cmd.split(' ')
   return cp.spawnSync(wsrunPath, ['--bin=' + require.resolve('./runner.sh')].concat(cmd), {
-    cwd: testDir
+    cwd: testDir,
+    env: { ...process.env, ...env }
   })
 }

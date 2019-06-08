@@ -1,6 +1,6 @@
 import 'jest'
 import { fixPaths } from './fix-paths'
-import chalk from 'chalk';
+import chalk from 'chalk'
 
 describe('fix paths', () => {
   it('works', () => {
@@ -18,8 +18,8 @@ describe('fix paths', () => {
   })
 
   it('ignores absolute paths that contain @', () => {
-    let logLine = 'at (/Thing/src/node_modules/@h4bff/backend/src/rpc/serviceRegistry.ts:54:54)';
-    let res = fixPaths('/Thing/src/','/Thing/src/packages/app-lib-ca-backend', logLine)
+    let logLine = 'at (/Thing/src/node_modules/@h4bff/backend/src/rpc/serviceRegistry.ts:54:54)'
+    let res = fixPaths('/Thing/src/', '/Thing/src/packages/app-lib-ca-backend', logLine)
     expect(res).toEqual(logLine)
   })
 
@@ -36,5 +36,10 @@ describe('fix paths', () => {
   it('works with color codes', () => {
     let res = fixPaths('/a/b/c', '/a/b/c/packages/p', 'Testing ' + chalk.blue('src/test.ts:12'))
     expect(res).toEqual('Testing ' + chalk.blue('packages/p/src/test.ts:12'))
+  })
+
+  it('doesnt rewrite URLs', () => {
+    let res = fixPaths('/a/b/c', '/a/b/c/packages/p', 'Testing http://src/test.ts')
+    expect(res).toEqual('Testing http://src/test.ts')
   })
 })

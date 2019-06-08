@@ -1,6 +1,6 @@
 {
   "name": "wsrun",
-  "version": "3.6.6",
+  "version": "4.0.0",
   "description": "executes commands on packages in parallel, but is aware of the dependencies between them",
   "main": "./build/index.js",
   "author": "hfour",
@@ -8,16 +8,7 @@
   "repository": "github:whoeverest/wsrun",
   "jest": {
     "verbose": false,
-    "transform": {
-      "^.+\\.tsx?$": "ts-jest"
-    },
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js",
-      "jsx",
-      "json"
-    ],
+    "preset": "ts-jest",
     "testPathIgnorePatterns": [
       "<rootDir>/tmp",
       "<rootDir>/node_modules/",
@@ -33,7 +24,7 @@
     ]
   },
   "bin": {
-    "wsrun": "./build/index.js"
+    "wsrun": "./bin/wsrun.js"
   },
   "files": [
     "build/"
@@ -61,7 +52,7 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "test": "jest",
+    "test": "yarn build && jest",
     "test:watch": "jest --watch",
     "dev": "run-p test:watch watch",
     "prepublish": "tsc"

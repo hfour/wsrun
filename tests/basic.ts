@@ -185,17 +185,35 @@ describe('basic', () => {
     )
   })
 
-  it('should show an error for pkgs without name', async () => {
+  it('should not rewrite paths by default', async () => {
     await withScaffold(
       {
         packages: [
-          echo.makePkg({ path: 'packages/p1', dependencies: {} }),
+          echo.makePkg(
+            { name: 'app-x-frontend', dependencies: {} },
+            '',
+            'Output for path src/index.ts testing'
+          )
         ]
+      },
+      async () => {
+        let tst = await wsrun('printthis', { WSRUN_REWRITE_PATHS: 'true' })
+        expect(tst.output.toString()).toContain('app-x-frontend/src/index.ts')
+      }
+    )
+  })
+
+  it('should show an error for pkgs without name', async () => {
+    await withScaffold(
+      {
+        packages: [echo.makePkg({ path: 'packages/p1', dependencies: {} })]
       },
       async () => {
         let tst = await wsrun('doecho')
         expect(tst.status).toBeTruthy()
-        expect(String(tst.output[2])).toEqual('\nERROR: Package in directory packages/p1 has no name in package.json\n')
+        expect(String(tst.output[2])).toEqual(
+          '\nERROR: Package in directory packages/p1 has no name in package.json\n'
+        )
       }
     )
   })
