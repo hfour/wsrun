@@ -24,7 +24,7 @@
     ]
   },
   "bin": {
-    "wsrun": "./bin/wsrun"
+    "wsrun": "./bin/wsrun.js"
   },
   "files": [
     "build/"
