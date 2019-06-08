@@ -1,4 +1,5 @@
 dist: xenial
 language: node_js
 node_js: 'lts/*'
+before_script: ln -s /usr/bin/nodejs /usr/bin/node
 script: yarn test -i --ci
