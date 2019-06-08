@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 /**
  * Tool for running command in yarn workspaces.
  */
