@@ -160,7 +160,7 @@ const recursive: boolean = argv.recursive || argv.r || false
 const fastExit: boolean = argv.fastExit || false
 const collectLogs: boolean = argv.collectLogs || false
 const addPrefix: boolean = argv.prefix === undefined ? true : false
-console.log(argv)
+
 const rewritePaths: boolean = Boolean(argv.rewritePaths)
 const doneCriteria: string = argv.doneCriteria
 const exclude: string[] =
