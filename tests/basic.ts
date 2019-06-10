@@ -217,4 +217,20 @@ describe('basic', () => {
       }
     )
   })
+
+  it('should keep its stdout and stderr stable', async () => {
+    await withScaffold(
+      {
+        packages: [
+          echo.makePkg({ name: '@x/p1', path: 'packages/p1', dependencies: {} }),
+          echo.makePkg({ name: '@x/p2', path: 'packages/p2', dependencies: { '@x/p1': '*' } })
+        ]
+      },
+      async () => {
+        let tst = await wsrun('--serial doecho 0 Hello')
+        expect(tst.stdout.toString()).toMatchSnapshot()
+        expect(tst.stderr.toString()).toMatchSnapshot()
+      }
+    )
+  })
 })
