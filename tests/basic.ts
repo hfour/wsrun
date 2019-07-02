@@ -218,6 +218,9 @@ describe('basic', () => {
     )
   })
 
+  function removePath(processOutput: string) {
+    return processOutput.replace(process.cwd(), '')
+  }
   it('should keep its stdout and stderr stable', async () => {
     await withScaffold(
       {
@@ -228,8 +231,8 @@ describe('basic', () => {
       },
       async () => {
         let tst = await wsrun('--serial doecho 0 Hello')
-        expect(tst.stdout.toString()).toMatchSnapshot()
-        expect(tst.stderr.toString()).toMatchSnapshot()
+        expect(removePath(tst.stdout.toString())).toMatchSnapshot()
+        expect(removePath(tst.stderr.toString())).toMatchSnapshot()
       }
     )
   })
