@@ -21,7 +21,7 @@ class Prefixer {
   prefixer = (basePath: string, pkg: string, line: string) => {
     let l = ''
     if (this.currentName != pkg) l += chalk.bold((this.currentName = pkg)) + '\n'
-    l += ' | ' + this.processFilePaths(basePath, line)
+    l += ' | ' + line // this.processFilePaths(basePath, line)
     return l
   }
 
@@ -64,7 +64,6 @@ export class RunGraph {
     public opts: GraphOptions,
     public pkgPaths: Dict<string>
   ) {
-
     this.checkResultsAndReport = this.checkResultsAndReport.bind(this)
     this.closeAll = this.closeAll.bind(this)
 
