@@ -237,7 +237,7 @@ describe('basic', () => {
   })
 
   function removePath(processOutput: string) {
-    return processOutput.replace(process.cwd(), '')
+    return processOutput.split(process.cwd()).join('')
   }
   it('should keep its stdout and stderr stable', async () => {
     await withScaffold(
