@@ -42,4 +42,13 @@ describe('fix paths', () => {
     let res = fixPaths('/a/b/c', '/a/b/c/packages/p', 'Testing http://src/test.ts')
     expect(res).toEqual('Testing http://src/test.ts')
   })
+
+  it('works with dashes', () => {
+    let res = fixPaths(
+      '/a/b/c',
+      '/a/b/c/packages/p',
+      'Testing (/a/b/c/packages/test-package/src/file.ts:12'
+    )
+    expect(res).toEqual('Testing (/a/b/c/packages/test-package/src/file.ts:12')
+  })
 })
