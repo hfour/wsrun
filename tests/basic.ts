@@ -203,6 +203,24 @@ describe('basic', () => {
     )
   })
 
+  it('should not rewrite paths by default', async () => {
+    await withScaffold(
+      {
+        packages: [
+          echo.makePkg(
+            { name: 'app-x-frontend', dependencies: {} },
+            '',
+            'Output for path src/index.ts testing'
+          )
+        ]
+      },
+      async () => {
+        let tst = await wsrun('printthis', {})
+        expect(tst.output.toString()).not.toContain('app-x-frontend/src/index.ts')
+      }
+    )
+  })
+
   it('should show an error for pkgs without name', async () => {
     await withScaffold(
       {
@@ -219,7 +237,7 @@ describe('basic', () => {
   })
 
   function removePath(processOutput: string) {
-    return processOutput.replace(process.cwd(), '')
+    return processOutput.split(process.cwd()).join('')
   }
   it('should keep its stdout and stderr stable', async () => {
     await withScaffold(

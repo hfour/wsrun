@@ -4,7 +4,7 @@ exports[`basic should keep its stdout and stderr stable 1`] = `
 "@x/p1
  | $ sleep $1; echo @x/p1 $1 >> '/tmp/wsrun-test-1/echo.out' 0 Hello
 @x/p2
- | $ sleep $1; echo @x/p2 $1 >> '/home/spion/Projects/wsrun/tmp/wsrun-test-1/echo.out' 0 Hello
+ | $ sleep $1; echo @x/p2 $1 >> '/tmp/wsrun-test-1/echo.out' 0 Hello
 "
 `;
 
