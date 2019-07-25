@@ -1,4 +1,16 @@
 dist: xenial
 language: node_js
 node_js: 'lts/*'
-script: yarn test -i --ci
+jobs:
+  include:
+    - stage: test
+      script: yarn test -i --ci
+
+    # Define the release stage that runs semantic-release
+    - stage: release
+      # Advanced: optionally overwrite your default `script` step to skip the tests
+      # script: skip
+      deploy:
+        provider: script
+        skip_cleanup: true
+        script: yarn build && yarn release -d
