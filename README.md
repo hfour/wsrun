@@ -1,6 +1,6 @@
 # Workspace script runner
 
-Run npm scripts in a yarn workspace.
+Run npm scripts or custom commands in a yarn workspace
 
 ### Usage:
 
@@ -67,13 +67,15 @@ in order, continuing when command outputs a line containing "Compilation complet
 
 `yarn wsrun --exclude-missing test` will run the test script only on packages that have it
 
-#### Arguments and extra scripts
+#### Additional arguments to scripts
 
 If you want to pass additional arguments to the command you can do that by adding them after the
 command:
 
 `yarn wsrun -r --stages build -p tsconfig.alternative.json` - build all packages in stages with
 and pass an alternative tsconfig to the build script
+
+#### Commands not in the scripts field
 
 When `--skip-missing` is not used, you can pass a command that doesn't exist in the scripts field:
 
