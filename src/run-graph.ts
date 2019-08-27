@@ -24,10 +24,6 @@ class Prefixer {
     l += ' | ' + line // this.processFilePaths(basePath, line)
     return l
   }
-
-  processFilePaths(basePath: string, line: string) {
-    return fixPaths(this.wspath, basePath, line)
-  }
 }
 
 export interface GraphOptions {
@@ -57,7 +53,7 @@ export class RunGraph {
   private resultMap = new Map<string, Result>()
   private throat: PromiseFnRunner = passThrough
   prefixer = new Prefixer(this.opts.workspacePath).prefixer
-  pathRewriter = fixPaths
+  pathRewriter = (pkgPath: string, line: string) => fixPaths(this.opts.workspacePath, pkgPath, line)
 
   constructor(
     public pkgJsons: PkgJson[],

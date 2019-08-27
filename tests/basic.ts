@@ -185,20 +185,16 @@ describe('basic', () => {
     )
   })
 
-  it('should not rewrite paths by default', async () => {
+  it('should rewrite paths if instructed', async () => {
     await withScaffold(
       {
         packages: [
-          echo.makePkg(
-            { name: 'app-x-frontend', dependencies: {} },
-            '',
-            'Output for path src/index.ts testing'
-          )
+          echo.makePkg({ name: 'app-x-frontend', dependencies: {} }, '', 'X src/index.ts testing')
         ]
       },
       async () => {
         let tst = await wsrun('printthis', { WSRUN_REWRITE_PATHS: 'true' })
-        expect(tst.output.toString()).toContain('app-x-frontend/src/index.ts')
+        expect(tst.output.toString()).toContain('X packages/app-x-frontend/src/index.ts')
       }
     )
   })
