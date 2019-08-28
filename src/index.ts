@@ -74,7 +74,9 @@ let yargsParser = yargs
       'exclude-missing',
       'report',
       'if',
-      'ifDependency'
+      'ifDependency',
+      'if-private',
+      'if-public'
     ],
     'Misc Options:'
   )
@@ -85,6 +87,14 @@ let yargsParser = yargs
     ifDependency: {
       describe:
         'Run main command only if packages dependencies passed the condition (not available in parallel mode)',
+      boolean: true
+    },
+    'if-private': {
+      describe: 'Run main command only if the package is private',
+      boolean: true
+    },
+    'if-public': {
+      describe: 'Run main command only if the package is public',
       boolean: true
     },
     'fast-exit': {
@@ -211,6 +221,8 @@ let runner = new RunGraph(
     excludeMissing,
     showReport,
     if: argv.if || null,
+    ifPrivate: argv.ifPrivate || false,
+    ifPublic: argv.ifPublic || false,
     ifDependency: argv.ifDependency || false,
     workspacePath: process.cwd(),
     concurrency

@@ -11,6 +11,7 @@ export type Dict<T> = { [key: string]: T }
 
 export interface PkgJson {
   name: string
+  private?: boolean
   dependencies?: Dict<string>
   devDependencies?: Dict<string>
   scripts?: { [name: string]: string }

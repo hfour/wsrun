@@ -1,14 +1,34 @@
 import 'jest'
 import { withScaffold, echo, wsrun } from './test.util'
 
-let pkgList = (errorp3: boolean = false, condition?: string) => [
-  echo.makePkg({ name: 'p1', dependencies: { p2: '*' } }, condition),
-  echo.makePkg({ name: 'p2', dependencies: { p3: '*', p4: '*' } }, condition),
+let pkgList = (
+  errorp3: boolean = false,
+  condition?: string,
+  privatePackages: { [key: string]: boolean } = {}
+) => [
+  echo.makePkg(
+    { name: 'p1', private: privatePackages['p1'], dependencies: { p2: '*' } },
+    condition
+  ),
+  echo.makePkg(
+    { name: 'p2', private: privatePackages['p2'], dependencies: { p3: '*', p4: '*' } },
+    condition
+  ),
   errorp3
-    ? echo.makePkgErr({ name: 'p3', dependencies: { p4: '*', p5: '*' } })
-    : echo.makePkg({ name: 'p3', dependencies: { p4: '*', p5: '*' } }, condition),
-  echo.makePkg({ name: 'p4', dependencies: { p5: '*' } }, condition),
-  echo.makePkg({ name: 'p5', dependencies: {} }, condition)
+    ? echo.makePkgErr({
+        name: 'p3',
+        private: privatePackages['p3'],
+        dependencies: { p4: '*', p5: '*' }
+      })
+    : echo.makePkg(
+        { name: 'p3', private: privatePackages['p3'], dependencies: { p4: '*', p5: '*' } },
+        condition
+      ),
+  echo.makePkg(
+    { name: 'p4', private: privatePackages['p4'], dependencies: { p5: '*' } },
+    condition
+  ),
+  echo.makePkg({ name: 'p5', private: privatePackages['p5'], dependencies: {} }, condition)
 ]
 
 describe('basic', () => {
@@ -83,6 +103,34 @@ describe('basic', () => {
       },
       async () => {
         let tst = await wsrun('--stages -r --if=condition -- doecho')
+        expect(tst.error).toBeFalsy()
+        let output = await echo.getOutput()
+        expect(output).toEqual(['p4', ''].join('\n'))
+      }
+    )
+  })
+
+  it('should support if-private execution', async () => {
+    await withScaffold(
+      {
+        packages: pkgList(false, undefined, { p4: true })
+      },
+      async () => {
+        let tst = await wsrun('--stages -r --if-private -- doecho')
+        expect(tst.error).toBeFalsy()
+        let output = await echo.getOutput()
+        expect(output).toEqual(['p4', ''].join('\n'))
+      }
+    )
+  })
+
+  it('should support if-public execution', async () => {
+    await withScaffold(
+      {
+        packages: pkgList(false, undefined, { p1: true, p2: true, p3: true, p5: true })
+      },
+      async () => {
+        let tst = await wsrun('--stages -r --if-public -- doecho')
         expect(tst.error).toBeFalsy()
         let output = await echo.getOutput()
         expect(output).toEqual(['p4', ''].join('\n'))

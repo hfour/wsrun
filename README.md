@@ -29,6 +29,8 @@ Misc Options:
   --if               Run main command only if this condition runs successfully
   --ifDependency     Run main command only if packages dependencies passed the condition (not
                      available in parallel mode)                                           [boolean]
+  --if-private       Run main command only if the package is private                       [boolean]
+  --if-public        Run main command only if the package is public                        [boolean]
 
 Other Options:
   --help         Show help                                                                 [boolean]
@@ -90,3 +92,7 @@ Examples
 `yarn wsrun --stages --if build-needed build` - for each package it will first try `yarn wsrun build-needed` and only if the exit code is zero (success) it will run `yarn wsrun build`
 
 `yarn wsrun --stages --if build-needed --if-dependency build` - it will run `build` for each package in stages, if either the package's own condition command was success, or any of the dependencies had a successful condition.
+
+#### Publishing public packages
+
+`yarn wsrun --stages --if-public publish`

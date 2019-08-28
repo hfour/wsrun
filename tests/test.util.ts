@@ -23,6 +23,7 @@ let mkdirpAsync = promisify(mkdirp)
 
 export type PackageJson = {
   name?: string
+  private?: boolean
   path?: string
   dependencies?: { [name: string]: string }
   devDependencies?: { [name: string]: string }

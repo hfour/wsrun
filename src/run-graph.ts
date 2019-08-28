@@ -44,6 +44,8 @@ export interface GraphOptions {
   excludeMissing: boolean
   showReport: boolean
   if: string
+  ifPublic: boolean
+  ifPrivate: boolean
   ifDependency: boolean
   concurrency: number | null
 }
@@ -168,11 +170,14 @@ export class RunGraph {
 
       let ifCondtition = Bromise.resolve(true)
 
-      if (
-        this.opts.if &&
-        (!this.opts.ifDependency || !depsStatuses.find(ds => ds === ProcResolution.Normal))
-      ) {
-        ifCondtition = this.runCondition(this.opts.if, pkg)
+      if (!this.opts.ifDependency || !depsStatuses.find(ds => ds === ProcResolution.Normal)) {
+        if (this.opts.if) {
+          ifCondtition = this.runCondition(this.opts.if, pkg)
+        } else if (this.opts.ifPrivate && p) {
+          ifCondtition = Bromise.resolve(p.private || false)
+        } else if (this.opts.ifPublic && p) {
+          ifCondtition = Bromise.resolve(!p.private)
+        }
       }
 
       let child = ifCondtition.then(shouldExecute => {
