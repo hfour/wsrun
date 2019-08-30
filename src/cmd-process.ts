@@ -11,7 +11,7 @@ export interface CmdOptions {
   silent?: boolean
   collectLogs: boolean
   prefixer?: (basePath: string, pkg: string, line: string) => string
-  pathRewriter?: (basePath: string, pkg: string, line: string) => string
+  pathRewriter?: (currentPath: string, line: string) => string
   doneCriteria?: string
   path: string
 }
@@ -107,9 +107,7 @@ export class CmdProcess {
   }
 
   private autoPathRewrite(line: string) {
-    return this.opts.pathRewriter
-      ? this.opts.pathRewriter(this.opts.path, this.pkgName, line)
-      : line
+    return this.opts.pathRewriter ? this.opts.pathRewriter(this.opts.path, line) : line
   }
 
   private autoAugmentLine(line: string) {
