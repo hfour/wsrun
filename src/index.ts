@@ -232,3 +232,9 @@ runner.run(cmd, runlist.length > 0 ? runlist : undefined).then(hadError => {
   }
   process.exit(hadError ? 1 : 0)
 })
+
+// close all children on ctrl+c
+process.on('SIGINT', () => {
+  runner.closeAll()
+  process.exit(130)
+})

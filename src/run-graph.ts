@@ -61,7 +61,6 @@ export class RunGraph {
     public pkgPaths: Dict<string>
   ) {
     this.checkResultsAndReport = this.checkResultsAndReport.bind(this)
-    this.closeAll = this.closeAll.bind(this)
 
     pkgJsons.forEach(j => this.jsonMap.set(j.name, j))
     this.children = []
@@ -70,11 +69,9 @@ export class RunGraph {
     // max 16 proc unless otherwise specified
     else if (this.opts.mode === 'stages') this.throat = mkThroat(opts.concurrency || 16)
     else if (opts.concurrency) this.throat = mkThroat(opts.concurrency)
-
-    process.on('SIGINT', this.closeAll) // close all children on ctrl+c
   }
 
-  private closeAll = () => {
+  closeAll() {
     console.log('Stopping', this.children.length, 'active children')
     this.children.forEach(ch => ch.stop())
   }
