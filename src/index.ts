@@ -67,7 +67,7 @@ let yargsParser = yargs
       'fast-exit',
       'collect-logs',
       'no-prefix',
-      'no-path-rewrite',
+      'rewrite-paths',
       'bin',
       'done-criteria',
       'exclude',

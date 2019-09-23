@@ -20,6 +20,8 @@ Misc Options:
   --fast-exit        If at least one script exits with code > 0, abort                     [boolean]
   --collect-logs     Collect per-package output and print it at the end of each script     [boolean]
   --no-prefix        Don't prefix output                                                   [boolean]
+  --rewrite-paths    Rewrite relative paths in the standard output, by prepending the
+                     <root_folder>/<package_name>.                                         [boolean]
   --bin              The program to pass the command to                   [string] [default: "yarn"]
   --done-criteria    Consider a process "done" when an output line matches the specified RegExp
   --exclude          Skip running the command for that package                              [string]
@@ -33,7 +35,8 @@ Misc Options:
 Other Options:
   --help         Show help                                                                 [boolean]
   --version      Show version number                                                       [boolean]
-  -c             Denotes the end of the package list and the beginning of the command.
+  -c             Denotes the end of the package list and the beginning of the command. Can be used
+                 instead of "--"                                                           [boolean]
   --concurrency  Maximum number of commands to be executed at once                          [number]
 
 ```
