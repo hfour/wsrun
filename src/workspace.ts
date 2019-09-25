@@ -26,23 +26,25 @@ export type Packages = Dict<{
  * and the package JSONs themselves.
  */
 export function listPkgs(wsRoot: string, globs: string[]) {
-  let filesAndDirs = flatMap(globs, g => glob.sync(g))
+  // based on yarn v1.18.0 workspace resolution: https://github.com/yarnpkg/yarn/blob/v1.18.0/src/config.js#L794
+  const registryFilenames = ['package.json', 'yarn.json']
+  const registryFolders = ['node_modules']
+  const trailingPattern = `/+(${registryFilenames.join('|')})`
+  const ignorePatterns = registryFolders.map(folder => `/${folder}/**/+(${registryFilenames.join('|')})`)
+
+  const pkgJsonPaths = flatMap(globs, (g: string) => glob.sync(g.replace(/\/?$/, trailingPattern), {
+    cwd: wsRoot,
+    ignore: ignorePatterns.map(ignorePattern => g.replace(/\/?$/, ignorePattern))
+  }))
+
   const packages: Packages = {}
-  filesAndDirs.forEach(f => {
-    const isDir = fs.lstatSync(path.resolve(wsRoot, f)).isDirectory()
-    if (isDir) {
-      const pkgJsonPath = path.resolve(wsRoot, f, 'package.json')
-      const hasPkgJson = fs.existsSync(pkgJsonPath)
-      if (!hasPkgJson) {
-        // console.warn(`Warning: ${f} is a directory, but has no package.json`)
-        return
-      }
-      const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'))
-      if (!pkgJson.name) throw new Error(`Package in directory ${f} has no name in package.json`)
-      packages[pkgJson.name] = {
-        path: path.join(wsRoot, f),
-        json: pkgJson
-      }
+  pkgJsonPaths.forEach(pkgJsonPath => {
+    const pkgDir = path.dirname(pkgJsonPath)
+    const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'))
+    if (!pkgJson.name) throw new Error(`Package in directory ${pkgDir} has no name in ${path.basename(pkgJsonPath)}`)
+    packages[pkgJson.name] = {
+      path: path.join(wsRoot, pkgDir),
+      json: pkgJson
     }
   })
   return packages
