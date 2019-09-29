@@ -130,8 +130,7 @@ export class CmdProcess {
       //shFlag = '-c'
     }
 
-    const stdOutBuffer: string[] = []
-    const stdErrBuffer: string[] = []
+    const outputBuffer: { type: 'stderr' | 'stdout', line: string }[] = []
 
     this.cmd = cmd
     this.cp = spawn(sh, args, {
@@ -147,22 +146,22 @@ export class CmdProcess {
 
     if (this.cp.stdout)
       this.cp.stdout.pipe(split()).on('data', (line: string) => {
-        if (this.opts.collectLogs) stdOutBuffer.push(line)
+        if (this.opts.collectLogs) outputBuffer.push({ type: 'stdout', line })
         else console.log(this.autoAugmentLine(line))
         if (this.doneCriteria && this.doneCriteria.test(line)) this._finished.resolve()
       })
     if (this.cp.stderr)
       this.cp.stderr.pipe(split()).on('data', (line: string) => {
-        if (this.opts.collectLogs) stdErrBuffer.push(line)
+        if (this.opts.collectLogs) outputBuffer.push({ type: 'stderr', line })
         else console.error(this.autoAugmentLine(line))
         if (this.doneCriteria && this.doneCriteria.test(line)) this._finished.resolve()
       })
     if (this.opts.collectLogs)
       this._closed.promise.then(() => {
-        if (stdOutBuffer.length)
-          console.log(stdOutBuffer.map(line => this.autoAugmentLine(line)).join('\n'))
-        if (stdErrBuffer.length)
-          console.error(stdErrBuffer.map(line => this.autoAugmentLine(line)).join('\n'))
+        outputBuffer.forEach(line => {
+          if (line.type === 'stdout') console.log(this.autoAugmentLine(line.line))
+          else console.error(this.autoAugmentLine(line.line))
+        })
       })
   }
 }
