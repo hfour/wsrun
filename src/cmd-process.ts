@@ -6,6 +6,8 @@ import originalSplit = require('split')
 import { Result, ResultSpecialValues } from './enums'
 import { defer } from './utils'
 
+import { IConsole } from './console';
+
 export interface CmdOptions {
   rejectOnNonZeroExit: boolean
   silent?: boolean
@@ -64,7 +66,7 @@ export class CmdProcess {
     return this.cmd.join(' ')
   }
 
-  constructor(private cmd: string[], private pkgName: string, private opts: CmdOptions) {
+  constructor(private console: IConsole, private cmd: string[], private pkgName: string, private opts: CmdOptions) {
     this.pkgName = pkgName
     this.opts = opts
 
@@ -83,7 +85,7 @@ export class CmdProcess {
     this.exitCode.then(code => {
       if (code > 0) {
         const msg = '`' + this.cmdString + '` failed with exit code ' + code
-        if (!this.opts.silent) console.error(this.autoAugmentLine(msg))
+        if (!this.opts.silent) this.console.error(this.autoAugmentLine(msg))
         if (this.opts.rejectOnNonZeroExit) return this._finished.reject(new Error(msg))
       }
       this._finished.resolve()
@@ -130,8 +132,6 @@ export class CmdProcess {
       //shFlag = '-c'
     }
 
-    const outputBuffer: { type: 'stderr' | 'stdout', line: string }[] = []
-
     this.cmd = cmd
     this.cp = spawn(sh, args, {
       cwd:
@@ -146,22 +146,13 @@ export class CmdProcess {
 
     if (this.cp.stdout)
       this.cp.stdout.pipe(split()).on('data', (line: string) => {
-        if (this.opts.collectLogs) outputBuffer.push({ type: 'stdout', line })
-        else console.log(this.autoAugmentLine(line))
+        this.console.log(this.autoAugmentLine(line))
         if (this.doneCriteria && this.doneCriteria.test(line)) this._finished.resolve()
       })
     if (this.cp.stderr)
       this.cp.stderr.pipe(split()).on('data', (line: string) => {
-        if (this.opts.collectLogs) outputBuffer.push({ type: 'stderr', line })
-        else console.error(this.autoAugmentLine(line))
+        this.console.error(this.autoAugmentLine(line))
         if (this.doneCriteria && this.doneCriteria.test(line)) this._finished.resolve()
-      })
-    if (this.opts.collectLogs)
-      this._closed.promise.then(() => {
-        outputBuffer.forEach(line => {
-          if (line.type === 'stdout') console.log(this.autoAugmentLine(line.line))
-          else console.error(this.autoAugmentLine(line.line))
-        })
       })
   }
 }
