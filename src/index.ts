@@ -67,6 +67,7 @@ let yargsParser = yargs
       'fast-exit',
       'collect-logs',
       'no-prefix',
+      'name-prefix',
       'rewrite-paths',
       'bin',
       'done-criteria',
@@ -98,6 +99,12 @@ let yargsParser = yargs
     'no-prefix': {
       boolean: true,
       describe: "Don't prefix output"
+    },
+    'name-prefix': {
+      alias: 'n',
+      default: false,
+      boolean: true,
+      describe: "Prefix output with package name"
     },
     'rewrite-paths': {
       boolean: true,
@@ -202,7 +209,8 @@ let runner = new RunGraph(
     bin,
     fastExit,
     collectLogs,
-    addPrefix,
+    addPrefix: addPrefix || argv.namePrefix,
+    linePrefix: argv.namePrefix ? '' : ' | ',
     rewritePaths,
     mode: mode as any,
     recursive,
