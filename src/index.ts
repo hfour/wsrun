@@ -32,14 +32,17 @@ let yargsParser = yargs
   .group(['parallel', 'stages', 'serial'], 'Mode (choose one):')
   .options({
     parallel: {
+      alias: 'a',
       boolean: true,
       describe: 'Fully parallel mode (default)'
     },
     stages: {
+      alias: 't',
       boolean: true,
       describe: 'Run in stages: start with packages that have no deps'
     },
     serial: {
+      alias: 's',
       boolean: true,
       describe: 'Same as "stages" but with no parallelism at the stage level'
     }
@@ -58,6 +61,7 @@ let yargsParser = yargs
     },
     recursive: {
       alias: 'r',
+      default: false,
       boolean: true,
       describe: 'Execute the same script on all of its dependencies, too'
     }
@@ -88,18 +92,24 @@ let yargsParser = yargs
       boolean: true
     },
     'fast-exit': {
+      alias: 'e',
+      default: false,
       boolean: true,
       describe: 'If at least one script exits with code > 0, abort'
     },
     'collect-logs': {
+      alias: 'l',
+      default: false,
       boolean: true,
       describe: 'Collect per-package output and print it at the end of each script'
     },
-    'no-prefix': {
+    'prefix': {
+      default: true,
       boolean: true,
-      describe: "Don't prefix output"
+      describe: "Prefix output with package name"
     },
     'rewrite-paths': {
+      default: false,
       boolean: true,
       describe:
         'Rewrite relative paths in the standard output, by prepending the <root_folder>/<package_name>.'
@@ -113,19 +123,24 @@ let yargsParser = yargs
       describe: 'Consider a process "done" when an output line matches the specified RegExp'
     },
     exclude: {
+      alias: 'x',
       type: 'string',
       describe: 'Skip running the command for that package'
     },
     'exclude-missing': {
+      alias: 'm',
+      default: false,
       boolean: true,
       describe:
         'Skip packages which lack the specified command in the scripts section of their package.json'
     },
     report: {
+      default: false,
       boolean: true,
       describe: 'Show an execution report once the command has finished in each package'
     },
     concurrency: {
+      alias: 'y',
       type: 'number',
       describe: 'Maximum number of commands to be executed at once'
     }
@@ -144,7 +159,6 @@ function parsePositionally(yargs: yargs.Argv, cmd: string[]) {
 }
 
 const argv = parsePositionally(yargsParser, process.argv.slice(2)) // yargs.argv
-const bin = argv.bin || 'yarn'
 
 let mode: string
 if (argv.stages) {
@@ -155,20 +169,8 @@ if (argv.stages) {
   mode = 'parallel'
 }
 
-// should we run the command on all the dependencies, too?
-const recursive: boolean = argv.recursive || argv.r || false
-const fastExit: boolean = argv.fastExit || false
-const collectLogs: boolean = argv.collectLogs || false
-const addPrefix: boolean = argv.prefix === undefined ? true : false
-
-const rewritePaths: boolean = Boolean(argv.rewritePaths)
-const doneCriteria: string = argv.doneCriteria
 const exclude: string[] =
   (argv.exclude && (Array.isArray(argv.exclude) ? argv.exclude : [argv.exclude])) || []
-
-const excludeMissing = argv.excludeMissing || false
-
-const showReport: boolean = argv.report || false
 
 const concurrency: number | null = typeof argv.concurrency === 'number' ? argv.concurrency : null
 
@@ -199,17 +201,17 @@ const pkgJsons = _.map(pkgs, pkg => pkg.json)
 let runner = new RunGraph(
   pkgJsons,
   {
-    bin,
-    fastExit,
-    collectLogs,
-    addPrefix,
-    rewritePaths,
+    bin: argv.bin,
+    fastExit: argv.fastExit,
+    collectLogs: argv.collectLogs,
+    addPrefix: argv.prefix,
+    rewritePaths: argv.rewritePaths,
     mode: mode as any,
-    recursive,
-    doneCriteria,
+    recursive: argv.recursive,
+    doneCriteria: argv.doneCriteria,
     exclude,
-    excludeMissing,
-    showReport,
+    excludeMissing: argv.excludeMissing,
+    showReport: argv.report,
     if: argv.if || null,
     ifDependency: argv.ifDependency || false,
     workspacePath: process.cwd(),
@@ -227,7 +229,7 @@ if (cycle.length > 0) {
 let runlist = argv.package || []
 
 runner.run(cmd, runlist.length > 0 ? runlist : undefined).then(hadError => {
-  if (hadError && fastExit) {
+  if (hadError && argv.fastExit) {
     console.error(chalk.red(`Aborted execution due to previous error`))
   }
   process.exit(hadError ? 1 : 0)

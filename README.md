@@ -8,36 +8,36 @@ Run npm scripts or custom commands in a yarn workspace
 wsrun [options] -c <command> [<arg1> <arg2> ...]
 
 Mode (choose one):
-  --parallel  Fully parallel mode (default)                                                [boolean]
-  --stages    Run in stages: start with packages that have no deps                         [boolean]
-  --serial    Same as "stages" but with no parallelism at the stage level                  [boolean]
+  --parallel, -a  Fully parallel mode (default)                                               [boolean]
+  --stages, -t    Run in stages: start with packages that have no deps                        [boolean]
+  --serial, -s    Same as "stages" but with no parallelism at the stage level                 [boolean]
 
 Package Options:
-  --recursive, -r  Execute the same script on all of its dependencies, too                 [boolean]
-  --package, -p    Run only for packages matching this glob. Can be used multiple times.     [array]
+  --recursive, -r  Execute the same script on all of its dependencies, too                    [boolean]
+  --package, -p    Run only for packages matching this glob. Can be used multiple times.        [array]
 
 Misc Options:
-  --fast-exit        If at least one script exits with code > 0, abort                     [boolean]
-  --collect-logs     Collect per-package output and print it at the end of each script     [boolean]
-  --no-prefix        Don't prefix output                                                   [boolean]
-  --rewrite-paths    Rewrite relative paths in the standard output, by prepending the
-                     <root_folder>/<package_name>.                                         [boolean]
-  --bin              The program to pass the command to                   [string] [default: "yarn"]
-  --done-criteria    Consider a process "done" when an output line matches the specified RegExp
-  --exclude          Skip running the command for that package                              [string]
-  --exclude-missing  Skip packages which lack the specified command in the scripts section of their
-                     package.json                                                          [boolean]
-  --report           Show an execution report once the command has finished in each package[boolean]
-  --if               Run main command only if this condition runs successfully
-  --ifDependency     Run main command only if packages dependencies passed the condition (not
-                     available in parallel mode)                                           [boolean]
+  --fast-exit, e        If at least one script exits with code > 0, abort                     [boolean]
+  --collect-logs, l     Collect per-package output and print it at the end of each script     [boolean]
+  --no-prefix           Don't prefix output                                                   [boolean]
+  --rewrite-paths       Rewrite relative paths in the standard output, by prepending the
+                        <root_folder>/<package_name>.                                         [boolean]
+  --bin                 The program to pass the command to                   [string] [default: "yarn"]
+  --done-criteria       Consider a process "done" when an output line matches the specified RegExp
+  --exclude, x          Skip running the command for that package                              [string]
+  --exclude-missing, m  Skip packages which lack the specified command in the scripts section of their
+                        package.json                                                          [boolean]
+  --report              Show an execution report once the command has finished in each package[boolean]
+  --if                  Run main command only if this condition runs successfully
+  --ifDependency        Run main command only if packages dependencies passed the condition (not
+                        available in parallel mode)                                           [boolean]
 
 Other Options:
-  --help         Show help                                                                 [boolean]
-  --version      Show version number                                                       [boolean]
+  --help         Show help                                                                    [boolean]
+  --version      Show version number                                                          [boolean]
   -c             Denotes the end of the package list and the beginning of the command. Can be used
-                 instead of "--"                                                           [boolean]
-  --concurrency  Maximum number of commands to be executed at once                          [number]
+                 instead of "--"                                                              [boolean]
+  --concurrency, y  Maximum number of commands to be executed at once                          [number]
 
 ```
 
