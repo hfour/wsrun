@@ -3889,6 +3889,11 @@ lodash@^4.13.1, lodash@^4.17.10, lodash@^4.17.4, lodash@^4.2.1:
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.13.tgz#0bdc3a6adc873d2f4e0c4bac285df91b64fc7b93"
   integrity sha512-vm3/XWXfWtRua0FkUyEHBZy8kCPjErNBT9fJx8Zvs+U6zjqPbTUOpkaoum3O5uiA8sm+yNMHXfYkTUHFoMxFNA==
 
+lodash@^4.17.5:
+  version "4.17.15"
+  resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.15.tgz#b447f6670a0455bbfeedd11392eff330ea097548"
+  integrity sha512-8xOcRHvCjnocdS5cpwXQXVzmmh5e5+saE2QGoeQmbKmRS6J3VQppPOIt0MnmE+4xlZoumy0GPG0D0MVIQbNA1A==
+
 loose-envify@^1.0.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/loose-envify/-/loose-envify-1.4.0.tgz#71ee51fa7be4caec1a63839f7e682d8132d30caf"
@@ -6518,6 +6523,13 @@ ts-jest@23.10.5:
     resolve "1.x"
     semver "^5.5"
     yargs-parser "10.x"
+
+ts-mockito@^2.5.0:
+  version "2.5.0"
+  resolved "https://registry.yarnpkg.com/ts-mockito/-/ts-mockito-2.5.0.tgz#ad853051f2d116dfcaf6de6b0a1df2c82eda2d1f"
+  integrity sha512-b3qUeMfghRq5k5jw3xNJcnU9RKhqKnRn0k9v9QkN+YpuawrFuMIiGwzFZCpdi5MHy26o7YPnK8gag2awURl3nA==
+  dependencies:
+    lodash "^4.17.5"
 
 tunnel-agent@^0.6.0:
   version "0.6.0"
