@@ -49,12 +49,14 @@
     "semantic-release": "^15.13.18",
     "ts-jest": "23.10.5",
     "ts-mockito": "^2.5.0",
-    "typescript": "^3.1.1"
+    "typescript": "^3.1.1",
+    "prettier": "^1.19.1"
   },
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "test": "yarn build && jest",
+    "test": "yarn build && yarn test:prettier && jest",
+    "test:prettier": "prettier -c '**/*.ts' '**/*.json'",
     "test:watch": "jest --watch",
     "dev": "run-p test:watch watch",
     "prepublish": "tsc",

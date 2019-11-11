@@ -103,10 +103,10 @@ let yargsParser = yargs
       boolean: true,
       describe: 'Collect per-package output and print it at the end of each script'
     },
-    'prefix': {
+    prefix: {
       default: true,
       boolean: true,
-      describe: "Prefix output with package name"
+      describe: 'Prefix output with package name'
     },
     'rewrite-paths': {
       default: false,
@@ -194,7 +194,10 @@ try {
   process.exit(1)
 }
 
-const pkgPaths = _.mapValues(_.keyBy(pkgs, p => p.json.name), v => v.path)
+const pkgPaths = _.mapValues(
+  _.keyBy(pkgs, p => p.json.name),
+  v => v.path
+)
 
 const pkgJsons = _.map(pkgs, pkg => pkg.json)
 

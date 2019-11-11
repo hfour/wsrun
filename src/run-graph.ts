@@ -12,7 +12,7 @@ import { ConsoleFactory, SerializedConsole, DefaultConsole } from './console'
 type PromiseFn<T> = () => Bromise<T>
 type PromiseFnRunner = <T>(f: PromiseFn<T>) => Bromise<T>
 
-let mkThroat = require('throat')(Bromise) as ((limit: number) => PromiseFnRunner)
+let mkThroat = require('throat')(Bromise) as (limit: number) => PromiseFnRunner
 
 let passThrough: PromiseFnRunner = f => f()
 
@@ -53,7 +53,7 @@ export class RunGraph {
   private runList = new Set<string>()
   private resultMap = new Map<string, Result>()
   private throat: PromiseFnRunner = passThrough
-  private consoles: ConsoleFactory;
+  private consoles: ConsoleFactory
   prefixer = new Prefixer(this.opts.workspacePath).prefixer
   pathRewriter = (pkgPath: string, line: string) => fixPaths(this.opts.workspacePath, pkgPath, line)
 
@@ -73,7 +73,7 @@ export class RunGraph {
     else if (opts.concurrency) this.throat = mkThroat(opts.concurrency)
 
     if (opts.collectLogs) this.consoles = new SerializedConsole(console)
-    else this.consoles = new DefaultConsole();
+    else this.consoles = new DefaultConsole()
   }
 
   closeAll() {
@@ -132,7 +132,7 @@ export class RunGraph {
 
   private runCondition(cmd: string, pkg: string) {
     let cmdLine = this.makeCmd(cmd.split(' '))
-    let c = this.consoles.create();
+    let c = this.consoles.create()
     const child = new CmdProcess(c, cmdLine, pkg, {
       rejectOnNonZeroExit: false,
       silent: true,
@@ -141,7 +141,7 @@ export class RunGraph {
       doneCriteria: this.opts.doneCriteria,
       path: this.pkgPaths[pkg]
     })
-    child.finished.then(() => this.consoles.done(c));
+    child.finished.then(() => this.consoles.done(c))
     let rres = child.exitCode.then(code => code === 0)
     child.start()
     return rres
@@ -185,7 +185,7 @@ export class RunGraph {
         }
 
         let cmdLine = this.makeCmd(cmdArray)
-        let c = this.consoles.create();
+        let c = this.consoles.create()
         const child = new CmdProcess(c, cmdLine, pkg, {
           rejectOnNonZeroExit: this.opts.fastExit,
           collectLogs: this.opts.collectLogs,
@@ -194,7 +194,7 @@ export class RunGraph {
           doneCriteria: this.opts.doneCriteria,
           path: this.pkgPaths[pkg]
         })
-        child.finished.then(() => this.consoles.done(c));
+        child.finished.then(() => this.consoles.done(c))
         child.exitCode.then(code => this.resultMap.set(pkg, code))
         this.children.push(child)
         return Promise.resolve({ status: ProcResolution.Normal, process: child })

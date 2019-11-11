@@ -6,7 +6,7 @@ import originalSplit = require('split')
 import { Result, ResultSpecialValues } from './enums'
 import { defer } from './utils'
 
-import { IConsole } from './console';
+import { IConsole } from './console'
 
 export interface CmdOptions {
   rejectOnNonZeroExit: boolean
@@ -66,7 +66,12 @@ export class CmdProcess {
     return this.cmd.join(' ')
   }
 
-  constructor(private console: IConsole, private cmd: string[], private pkgName: string, private opts: CmdOptions) {
+  constructor(
+    private console: IConsole,
+    private cmd: string[],
+    private pkgName: string,
+    private opts: CmdOptions
+  ) {
     this.pkgName = pkgName
     this.opts = opts
 
