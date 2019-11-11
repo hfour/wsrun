@@ -17,7 +17,7 @@ let mkThroat = require('throat')(Bromise) as (limit: number) => PromiseFnRunner
 let passThrough: PromiseFnRunner = f => f()
 
 class Prefixer {
-  constructor(private wspath: string) {}
+  constructor() {}
   private currentName = ''
   prefixer = (basePath: string, pkg: string, line: string) => {
     let l = ''
@@ -54,7 +54,7 @@ export class RunGraph {
   private resultMap = new Map<string, Result>()
   private throat: PromiseFnRunner = passThrough
   private consoles: ConsoleFactory
-  prefixer = new Prefixer(this.opts.workspacePath).prefixer
+  private prefixer = new Prefixer().prefixer
   pathRewriter = (pkgPath: string, line: string) => fixPaths(this.opts.workspacePath, pkgPath, line)
 
   constructor(
