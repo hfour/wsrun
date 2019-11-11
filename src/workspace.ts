@@ -30,18 +30,23 @@ export function listPkgs(wsRoot: string, globs: string[]) {
   const registryFilenames = ['package.json', 'yarn.json']
   const registryFolders = ['node_modules']
   const trailingPattern = `/+(${registryFilenames.join('|')})`
-  const ignorePatterns = registryFolders.map(folder => `/${folder}/**/+(${registryFilenames.join('|')})`)
+  const ignorePatterns = registryFolders.map(
+    folder => `/${folder}/**/+(${registryFilenames.join('|')})`
+  )
 
-  const pkgJsonPaths = flatMap(globs, (g: string) => glob.sync(g.replace(/\/?$/, trailingPattern), {
-    cwd: wsRoot,
-    ignore: ignorePatterns.map(ignorePattern => g.replace(/\/?$/, ignorePattern))
-  }))
+  const pkgJsonPaths = flatMap(globs, (g: string) =>
+    glob.sync(g.replace(/\/?$/, trailingPattern), {
+      cwd: wsRoot,
+      ignore: ignorePatterns.map(ignorePattern => g.replace(/\/?$/, ignorePattern))
+    })
+  )
 
   const packages: Packages = {}
   pkgJsonPaths.forEach(pkgJsonPath => {
     const pkgDir = path.dirname(pkgJsonPath)
     const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'))
-    if (!pkgJson.name) throw new Error(`Package in directory ${pkgDir} has no name in ${path.basename(pkgJsonPath)}`)
+    if (!pkgJson.name)
+      throw new Error(`Package in directory ${pkgDir} has no name in ${path.basename(pkgJsonPath)}`)
     packages[pkgJson.name] = {
       path: path.join(wsRoot, pkgDir),
       json: pkgJson
