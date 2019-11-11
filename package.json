@@ -55,7 +55,7 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "test": "yarn build && jest && test:prettier",
+    "test": "yarn build && jest && yarn test:prettier",
     "test:prettier": "prettier -c '**/*.ts' '**/*.json'",
     "test:watch": "jest --watch",
     "dev": "run-p test:watch watch",
