@@ -3,11 +3,12 @@ import chalk from 'chalk'
 
 import { PkgJson, Dict } from './workspace'
 import { ResultSpecialValues, Result, ProcResolution } from './enums'
-import { uniq } from 'lodash'
+import { uniq, values } from 'lodash'
 import { CmdProcess } from './cmd-process'
 import minimatch = require('minimatch')
 import { fixPaths } from './fix-paths'
 import { ConsoleFactory, SerializedConsole, DefaultConsole } from './console'
+import { getChangedFilesForRoots } from 'jest-changed-files'
 
 type PromiseFn<T> = () => Bromise<T>
 type PromiseFnRunner = <T>(f: PromiseFn<T>) => Bromise<T>
@@ -36,6 +37,7 @@ export interface GraphOptions {
   mode: 'parallel' | 'serial' | 'stages'
   recursive: boolean
   doneCriteria: string | undefined
+  changedSince: string | undefined
   workspacePath: string
   exclude: string[]
   excludeMissing: boolean
@@ -305,12 +307,49 @@ export class RunGraph {
     return pkgsInError.length > 0
   }
 
-  expandGlobs(globs: string[]) {
-    return this.pkgJsons.map(p => p.name).filter(name => globs.some(glob => minimatch(name, glob)))
+  expandGlobs(globs: string[]): Promise<string[]> {
+    let pkgs = this.pkgJsons
+      .map(p => p.name)
+      .filter(name => globs.some(glob => minimatch(name, glob)))
+
+    // if changedSince is defined, filter the packages to contain only changed packages (according to git)
+    if (this.opts.changedSince) {
+      return getChangedFilesForRoots([this.opts.workspacePath], {
+        changedSince: this.opts.changedSince
+      }).then(data => {
+        if (!data.repos || (data.repos.git.size === 0 && data.repos.hg.size === 0)) {
+          throw new Error(
+            "The workspace is not a git/hg repo and it cannot work with 'changedSince'"
+          )
+        }
+
+        /**
+         * filter the packages by checking if they have any changed files. This way is quicker
+         * (mapping over packages) because package count is usually lower than changed files count
+         * and we only need to check once per package.
+         */
+        pkgs = pkgs.filter(pkg => {
+          const pkgPath = this.pkgPaths[pkg]
+          const path = `${this.opts.workspacePath}/${pkgPath}`
+
+          for (const file of data.changedFiles.values()) {
+            if (file.startsWith(path)) {
+              return true
+            }
+          }
+          return false
+        })
+
+        return pkgs
+      })
+    } else {
+      Promise.resolve(pkgs)
+    }
+    return Promise.resolve([])
   }
 
-  run(cmd: string[], globs: string[] = ['**/*']) {
-    let pkgs = this.expandGlobs(globs)
+  async run(cmd: string[], globs: string[] = ['**/*']) {
+    let pkgs = await this.expandGlobs(globs)
     this.runList = new Set(pkgs)
     return (
       Bromise.all(pkgs.map(pkg => this.lookupOrRun(cmd, pkg)))
