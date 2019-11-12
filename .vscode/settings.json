@@ -1,8 +1,5 @@
 {
   "editor.formatOnSave": true,
-  "prettier.printWidth": 100,
-  "prettier.semi": false,
-  "prettier.singleQuote": true,
   "search.exclude": {
     "**/node_modules": true,
     "**/bower_components": true,
