@@ -69,7 +69,7 @@ let yargsParser = yargs
       type: 'string',
       nargs: 1,
       describe:
-        'Runs commands in packages that have changed since the provided branch. If the current branch has diverged from the given branch, then only commands changed packages will be run.'
+        'Runs commands in packages that have changed since the provided source control branch.'
     }
   })
   .group(
