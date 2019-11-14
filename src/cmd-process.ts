@@ -11,8 +11,7 @@ import { IConsole } from './console'
 export interface CmdOptions {
   rejectOnNonZeroExit: boolean
   silent?: boolean
-  collectLogs: boolean
-  prefixer?: (basePath: string, pkg: string, line: string) => string
+  stdio: 'inherit' | 'pipe'
   pathRewriter?: (currentPath: string, line: string) => string
   doneCriteria?: string
   path: string
@@ -53,26 +52,11 @@ export class CmdProcess {
     return Bromise.race([this._exitCode.promise, this._cancelled.promise])
   }
 
-  /**
-   * ExitError is like exitCode, except it gets rejected when the exit code is nonzero
-   */
-  get exitError() {
-    return this.exitCode.then(c => {
-      if (c != 0) throw new Error('`' + this.cmdString + '` failed with exit code ' + c)
-    })
-  }
-
   get cmdString() {
     return this.cmd.join(' ')
   }
 
-  constructor(
-    public console: IConsole,
-    private cmd: string[],
-    private pkgName: string,
-    private opts: CmdOptions
-  ) {
-    this.pkgName = pkgName
+  constructor(public console: IConsole, private cmd: string[], private opts: CmdOptions) {
     this.opts = opts
 
     if (this.opts.doneCriteria) this.doneCriteria = new RegExp(this.opts.doneCriteria)
@@ -109,17 +93,12 @@ export class CmdProcess {
     this._cancelled.resolve(ResultSpecialValues.Cancelled)
   }
 
-  private autoPrefix(line: string) {
-    return this.opts.prefixer ? this.opts.prefixer(this.opts.path, this.pkgName, line) : line
-  }
-
   private autoPathRewrite(line: string) {
     return this.opts.pathRewriter ? this.opts.pathRewriter(this.opts.path, line) : line
   }
 
   private autoAugmentLine(line: string) {
     line = this.autoPathRewrite(line)
-    line = this.autoPrefix(line)
     return line
   }
 
@@ -143,10 +122,7 @@ export class CmdProcess {
         this.opts.path ||
         ((process.versions.node < '8.0.0' ? process.cwd : process.cwd()) as string),
       env: Object.assign(process.env, process.stdout.isTTY ? { FORCE_COLOR: '1' } : {}),
-      stdio:
-        this.opts.collectLogs || this.opts.prefixer != null || this.opts.doneCriteria
-          ? 'pipe'
-          : 'inherit'
+      stdio: this.opts.stdio
     })
 
     if (this.cp.stdout)

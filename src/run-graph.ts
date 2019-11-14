@@ -7,7 +7,13 @@ import { uniq, intersection } from 'lodash'
 import { CmdProcess } from './cmd-process'
 import minimatch = require('minimatch')
 import { fixPaths } from './fix-paths'
-import { ConsoleFactory, SerializedConsole, DefaultConsole, IConsole } from './console'
+import {
+  ConsoleFactory,
+  SerializedConsole,
+  DefaultConsole,
+  IConsole,
+  PrefixedConsole
+} from './console'
 import { getChangedFilesForRoots } from 'jest-changed-files'
 import { filterChangedPackages } from './filter-changed-packages'
 import { expandRevDeps } from './rev-deps'
@@ -18,17 +24,6 @@ type PromiseFnRunner = <T>(f: PromiseFn<T>) => Bromise<T>
 let mkThroat = require('throat')(Bromise) as (limit: number) => PromiseFnRunner
 
 let passThrough: PromiseFnRunner = f => f()
-
-class Prefixer {
-  constructor() {}
-  private currentName = ''
-  prefixer = (basePath: string, pkg: string, line: string) => {
-    let l = ''
-    if (this.currentName != pkg) l += chalk.bold((this.currentName = pkg)) + '\n'
-    l += ' | ' + line // this.processFilePaths(basePath, line)
-    return l
-  }
-}
 
 export interface GraphOptions {
   bin: string
@@ -59,7 +54,6 @@ export class RunGraph {
   private resultMap = new Map<string, Result>()
   private throat: PromiseFnRunner = passThrough
   private consoles: ConsoleFactory
-  private prefixer = new Prefixer().prefixer
   pathRewriter = (pkgPath: string, line: string) => fixPaths(this.opts.workspacePath, pkgPath, line)
 
   constructor(
@@ -77,7 +71,7 @@ export class RunGraph {
     else if (this.opts.mode === 'stages') this.throat = mkThroat(opts.concurrency || 16)
     else if (opts.concurrency) this.throat = mkThroat(opts.concurrency)
 
-    if (opts.collectLogs) this.consoles = new SerializedConsole(console)
+    if (opts.collectLogs) this.consoles = new SerializedConsole()
     else this.consoles = new DefaultConsole()
   }
 
@@ -146,12 +140,13 @@ export class RunGraph {
 
   private runCondition(cmd: string, pkg: string) {
     let cmdLine = this.makeCmd(cmd.split(' '))
-    let c = this.consoles.create()
-    const child = new CmdProcess(c, cmdLine, pkg, {
+    let c = this.consoles.create(
+      this.opts.addPrefix ? new PrefixedConsole(console, chalk.bold(pkg), ' | ') : console
+    )
+    const child = new CmdProcess(c, cmdLine, {
       rejectOnNonZeroExit: false,
       silent: true,
-      collectLogs: this.opts.collectLogs,
-      prefixer: this.opts.addPrefix ? this.prefixer : undefined,
+      stdio: this.opts.collectLogs || this.opts.addPrefix ? 'pipe' : 'inherit',
       doneCriteria: this.opts.doneCriteria,
       path: this.pkgPaths[pkg]
     })
@@ -199,11 +194,12 @@ export class RunGraph {
         }
 
         let cmdLine = this.makeCmd(cmdArray)
-        let c = this.consoles.create()
-        const child = new CmdProcess(c, cmdLine, pkg, {
+        let c = this.consoles.create(
+          this.opts.addPrefix ? new PrefixedConsole(console, chalk.bold(pkg), ' | ') : console
+        )
+        const child = new CmdProcess(c, cmdLine, {
           rejectOnNonZeroExit: this.opts.fastExit,
-          collectLogs: this.opts.collectLogs,
-          prefixer: this.opts.addPrefix ? this.prefixer : undefined,
+          stdio: this.opts.collectLogs || this.opts.addPrefix ? 'pipe' : 'inherit',
           pathRewriter: this.opts.rewritePaths ? this.pathRewriter : undefined,
           doneCriteria: this.opts.doneCriteria,
           path: this.pkgPaths[pkg]
@@ -374,8 +370,6 @@ export class RunGraph {
     return (
       Bromise.all(pkgs.map(pkg => this.lookupOrRun(cmd, pkg)))
         // Wait for any of them to error
-        .then(() => Bromise.all(this.children.map(c => c.exitCode)))
-        // Wait for the all the processes to finish
         .then(() => Bromise.all(this.children.map(c => c.result)))
         // Generate report
         .then(() => this.checkResultsAndReport(cmd, pkgs))

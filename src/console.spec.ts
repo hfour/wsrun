@@ -12,12 +12,12 @@ describe('serialized console', () => {
 
   beforeEach(() => {
     console = mock()
-    c = new SerializedConsole(instance(console))
+    c = new SerializedConsole()
   })
 
   it('should only output from the active console', () => {
-    let c1 = c.create()
-    let c2 = c.create()
+    let c1 = c.create(instance(console))
+    let c2 = c.create(instance(console))
 
     c1.log('hello 1')
     verify(console.log('hello 1')).once()
@@ -30,8 +30,8 @@ describe('serialized console', () => {
   })
 
   it('should output the second console when the first is done', async () => {
-    let c1 = c.create()
-    let c2 = c.create()
+    let c1 = c.create(instance(console))
+    let c2 = c.create(instance(console))
 
     c1.log('hello 1')
     verify(console.log('hello 1')).once()
@@ -48,9 +48,9 @@ describe('serialized console', () => {
   })
 
   it('should output from all consoles when they are done in the wrong order', async () => {
-    let c1 = c.create()
-    let c2 = c.create()
-    let c3 = c.create()
+    let c1 = c.create(instance(console))
+    let c2 = c.create(instance(console))
+    let c3 = c.create(instance(console))
 
     c1.log('hello 1')
     verify(console.log('hello 1')).once()
@@ -73,25 +73,25 @@ describe('serialized console', () => {
   })
 
   it('should log from console created after the first one is done', async () => {
-    let c1 = c.create()
+    let c1 = c.create(instance(console))
 
     c1.log('hello 1')
     verify(console.log('hello 1')).once()
     c.done(c1)
     await nextTick()
 
-    let c2 = c.create()
+    let c2 = c.create(instance(console))
 
     c2.log('hello 2')
     verify(console.log('hello 2')).once()
   })
 
   it('should not output from discarded console', async () => {
-    let c1 = c.create()
+    let c1 = c.create(instance(console))
     c1.log('hello 1')
-    let c2 = c.create()
+    let c2 = c.create(instance(console))
     c2.log('hello 2')
-    let c3 = c.create()
+    let c3 = c.create(instance(console))
     c3.log('hello 3')
 
     verify(console.log('hello 1')).once()
