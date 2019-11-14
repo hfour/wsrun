@@ -67,7 +67,7 @@ export class CmdProcess {
   }
 
   constructor(
-    private console: IConsole,
+    public console: IConsole,
     private cmd: string[],
     private pkgName: string,
     private opts: CmdOptions

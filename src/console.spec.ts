@@ -85,4 +85,25 @@ describe('serialized console', () => {
     c2.log('hello 2')
     verify(console.log('hello 2')).once()
   })
+
+  it('should not output from discarded console', async () => {
+    let c1 = c.create()
+    c1.log('hello 1')
+    let c2 = c.create()
+    c2.log('hello 2')
+    let c3 = c.create()
+    c3.log('hello 3')
+
+    verify(console.log('hello 1')).once()
+
+    c.discard(c2)
+
+    c.done(c1)
+    await nextTick()
+    verify(console.log('hello 3')).once()
+
+    c.done(c3)
+    await nextTick()
+    verify(console.log('hello 2')).never()
+  })
 })

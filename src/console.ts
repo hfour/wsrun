@@ -7,6 +7,8 @@ export interface IConsole {
 
 export interface ConsoleFactory {
   create(): IConsole
+  active(c: IConsole): boolean
+  discard(c: IConsole): void
   done(c: IConsole): void
 }
 
@@ -68,6 +70,14 @@ export class SerializedConsole implements ConsoleFactory {
     return c
   }
 
+  active(c: IConsole) {
+    return c === this._active
+  }
+
+  discard(c: IConsole) {
+    this._list = this._list.filter(_c => c !== _c)
+  }
+
   done(c: IConsole) {
     ;(c as SerializedConsoleImpl).finished.resolve()
   }
@@ -78,5 +88,10 @@ export class DefaultConsole implements ConsoleFactory {
     return console
   }
 
+  active(c: IConsole) {
+    return true
+  }
+
+  discard(c: IConsole) {}
   done(c: IConsole) {}
 }
