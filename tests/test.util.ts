@@ -100,6 +100,18 @@ export let echo = {
   }
 }
 
+export function makePkg(name: string, dependencies: { [name: string]: string }, script: string) {
+  return {
+    name,
+    path: `packages/${name}`,
+    dependencies,
+    license: 'MIT',
+    scripts: {
+      dorun: script
+    }
+  }
+}
+
 let pkgPath = path.resolve(__dirname, '..')
 let binPath = require('../package.json').bin.wsrun
 let wsrunPath = path.resolve(pkgPath, binPath)

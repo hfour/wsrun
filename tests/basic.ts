@@ -1,5 +1,5 @@
 import 'jest'
-import { withScaffold, echo, wsrun } from './test.util'
+import { withScaffold, echo, wsrun, makePkg } from './test.util'
 
 let pkgList = (errorp3: boolean = false, condition?: string) => [
   echo.makePkg({ name: 'p1', dependencies: { p2: '*' } }, condition),
@@ -249,5 +249,82 @@ describe('basic', () => {
         expect(removePath(tst.stderr.toString())).toMatchSnapshot()
       }
     )
+  })
+
+  function getTestOutput(stdout: Buffer) {
+    return stdout
+      .toString()
+      .split('\n')
+      .filter(line => line.match(/^ \| test -> /))
+      .map(line => /^ \| test -> (.*)$/.exec(line)![1])
+  }
+
+  describe('collect-logs', () => {
+    it('should fail with error if background process fails', async () => {
+      await withScaffold(
+        {
+          packages: [
+            makePkg('p1', {}, 'echo "test -> p1.1" ; sleep 1 ; echo "test -> p1.2"'),
+            makePkg('p2', {}, 'echo "test -> p2.1" ; exit 1')
+          ]
+        },
+        async () => {
+          let tst = await wsrun('--parallel --collect-logs dorun')
+          expect(tst.status).toBe(1)
+        }
+      )
+    })
+
+    it('should print the output from a failed background process after the output from the foreground process', async () => {
+      await withScaffold(
+        {
+          packages: [
+            makePkg('p1', {}, "echo 'test -> p1.1' ; sleep 1 ; echo 'test -> p1.2'"),
+            makePkg('p2', {}, "echo 'test -> p2.1' ; exit 1")
+          ]
+        },
+        async () => {
+          let tst = await wsrun('--parallel --collect-logs dorun')
+          expect(tst.status).toBe(1)
+          expect(getTestOutput(tst.stdout)).toEqual(['p1.1', 'p1.2', 'p2.1'])
+        }
+      )
+    })
+  })
+
+  describe('terminating', () => {
+    it('should not run dependent packages if one fails using --stages', async () => {
+      await withScaffold(
+        {
+          packages: [
+            makePkg('p1', { p2: '*' }, "echo 'test -> p1.1'"),
+            makePkg('p2', { p3: '*' }, "echo 'test -> p2.1'"),
+            makePkg('p3', {}, "echo 'test -> p3.1' ; exit 1")
+          ]
+        },
+        async () => {
+          let tst = await wsrun('--stages dorun')
+          expect(tst.status).toBe(1)
+          expect(getTestOutput(tst.stdout)).toEqual(['p3.1'])
+        }
+      )
+    })
+
+    it('should not run dependent packages if one fails using --stages and --collect-logs', async () => {
+      await withScaffold(
+        {
+          packages: [
+            makePkg('p1', { p2: '*' }, "echo 'test -> p1.1'"),
+            makePkg('p2', { p3: '*' }, "echo 'test -> p2.1'"),
+            makePkg('p3', {}, "echo 'test -> p3.1' ; exit 1")
+          ]
+        },
+        async () => {
+          let tst = await wsrun('--stages --collect-logs dorun')
+          expect(tst.status).toBe(1)
+          expect(getTestOutput(tst.stdout)).toEqual(['p3.1'])
+        }
+      )
+    })
   })
 })
