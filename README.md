@@ -15,6 +15,8 @@ Mode (choose one):
 Package Options:
   --recursive, -r  Execute the same script on all of its dependencies, too                    [boolean]
   --package, -p    Run only for packages matching this glob. Can be used multiple times.        [array]
+  --changedSince   Runs commands in packages that have changed since the provided source control
+                   branch.                                                                     [string]
 
 Misc Options:
   --fast-exit, e        If at least one script exits with code > 0, abort                     [boolean]
@@ -69,6 +71,9 @@ the option quoted to prevent bash from trying to expand it!
 in order, continuing when command outputs a line containing "Compilation complete"
 
 `yarn wsrun --exclude-missing test` will run the test script only on packages that have it
+
+`yarn wsrun --changedSince --exclude-missing test` will run the test script only on packages that have c
+hanged since master branch and have `test` command
 
 #### Additional arguments to scripts
 
