@@ -47,7 +47,7 @@ let yargsParser = yargs
       describe: 'Same as "stages" but with no parallelism at the stage level'
     }
   })
-  .group(['recursive', 'package'], 'Package Options:')
+  .group(['recursive', 'package', 'changedSince'], 'Package Options:')
   .options({
     package: {
       alias: 'p',
@@ -64,10 +64,18 @@ let yargsParser = yargs
       default: false,
       boolean: true,
       describe: 'Execute the same script on all of its dependencies, too'
+    },
+    changedSince: {
+      type: 'string',
+      nargs: 1,
+      describe:
+        'Runs commands in packages that have changed since the provided source control branch.'
     }
   })
   .group(
     [
+      'if',
+      'ifDependency',
       'fast-exit',
       'collect-logs',
       'no-prefix',
@@ -76,9 +84,7 @@ let yargsParser = yargs
       'done-criteria',
       'exclude',
       'exclude-missing',
-      'report',
-      'if',
-      'ifDependency'
+      'report'
     ],
     'Misc Options:'
   )
@@ -212,6 +218,7 @@ let runner = new RunGraph(
     mode: mode as any,
     recursive: argv.recursive,
     doneCriteria: argv.doneCriteria,
+    changedSince: argv.changedSince,
     exclude,
     excludeMissing: argv.excludeMissing,
     showReport: argv.report,
