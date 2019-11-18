@@ -80,13 +80,19 @@ export class RunGraph {
     this.children.forEach(ch => ch.stop())
   }
 
-  private handleFailedChild(child: CmdProcess, console: IConsole) {
-    this.children.forEach(c => {
-      if (c !== child && !this.consoles.active(c.console)) {
-        this.consoles.discard(c.console)
-        c.stop()
+  private handleFailedChild(child: CmdProcess) {
+    if (this.opts.fastExit) {
+      if (this.opts.collectLogs) {
+        this.children.forEach(c => {
+          if (c !== child && !this.consoles.active(c.console)) {
+            this.consoles.discard(c.console)
+            c.stop()
+          }
+        })
+      } else {
+        this.closeAll()
       }
-    })
+    }
   }
 
   private lookupOrRun(cmd: string[], pkg: string): Bromise<ProcResolution> {
@@ -144,7 +150,6 @@ export class RunGraph {
       this.opts.addPrefix ? new PrefixedConsole(console, chalk.bold(pkg), ' | ') : console
     )
     const child = new CmdProcess(c, cmdLine, {
-      rejectOnNonZeroExit: false,
       silent: true,
       stdio: this.opts.collectLogs || this.opts.addPrefix ? 'pipe' : 'inherit',
       doneCriteria: this.opts.doneCriteria,
@@ -156,13 +161,31 @@ export class RunGraph {
     return rres
   }
 
+  private isFailed(pkg: string) {
+    let res = this.resultMap.get(pkg)
+    if (typeof res === 'number' && res !== 0) {
+      return true
+    } else if (res === ResultSpecialValues.Cancelled) {
+      return true
+    } else {
+      return false
+    }
+  }
+
   private runOne(cmdArray: string[], pkg: string): Bromise<ProcResolution> {
     let p = this.jsonMap.get(pkg)
     if (p == null) throw new Error('Unknown package: ' + pkg)
-    let myDeps = Bromise.all(this.allDeps(p).map(d => this.lookupOrRun(cmdArray, d)))
+    let deps = this.allDeps(p)
+    let myDeps = Bromise.all(deps.map(d => this.lookupOrRun(cmdArray, d)))
 
     return myDeps.then(depsStatuses => {
       this.resultMap.set(pkg, ResultSpecialValues.Pending)
+
+      if (deps.some(d => this.isFailed(d))) {
+        // Don't run if any dependency failed
+        this.resultMap.set(pkg, ResultSpecialValues.Cancelled)
+        return Bromise.resolve(ProcResolution.Normal)
+      }
 
       if (this.opts.exclude.indexOf(pkg) >= 0) {
         console.log(chalk.bold(pkg), 'in exclude list, skipping')
@@ -198,7 +221,6 @@ export class RunGraph {
           this.opts.addPrefix ? new PrefixedConsole(console, chalk.bold(pkg), ' | ') : console
         )
         const child = new CmdProcess(c, cmdLine, {
-          rejectOnNonZeroExit: this.opts.fastExit,
           stdio: this.opts.collectLogs || this.opts.addPrefix ? 'pipe' : 'inherit',
           pathRewriter: this.opts.rewritePaths ? this.pathRewriter : undefined,
           doneCriteria: this.opts.doneCriteria,
@@ -206,9 +228,7 @@ export class RunGraph {
         })
         child.exitCode.then(() => this.consoles.done(c))
         child.exitCode.then(code => this.resultMap.set(pkg, code))
-        child.exitCode.then(
-          code => code > 0 && this.opts.fastExit && this.handleFailedChild(child, c)
-        )
+        child.exitCode.then(code => code > 0 && this.handleFailedChild(child))
         this.children.push(child)
         return Promise.resolve({ status: ProcResolution.Normal, process: child })
       })
