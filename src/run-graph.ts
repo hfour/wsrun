@@ -3,13 +3,14 @@ import chalk from 'chalk'
 
 import { PkgJson, Dict } from './workspace'
 import { ResultSpecialValues, Result, ProcResolution } from './enums'
-import { uniq, values } from 'lodash'
+import { uniq } from 'lodash'
 import { CmdProcess } from './cmd-process'
 import minimatch = require('minimatch')
 import { fixPaths } from './fix-paths'
 import { ConsoleFactory, SerializedConsole, DefaultConsole } from './console'
 import { getChangedFilesForRoots } from 'jest-changed-files'
 import { filterChangedPackages } from './filter-changed-packages'
+import { expandRevDeps } from './rev-deps'
 
 type PromiseFn<T> = () => Bromise<T>
 type PromiseFnRunner = <T>(f: PromiseFn<T>) => Bromise<T>
@@ -39,6 +40,7 @@ export interface GraphOptions {
   recursive: boolean
   doneCriteria: string | undefined
   changedSince: string | undefined
+  revDeps: boolean
   workspacePath: string
   exclude: string[]
   excludeMissing: boolean
@@ -309,10 +311,6 @@ export class RunGraph {
   }
 
   async expandGlobs(globs: string[]) {
-    let pkgs = this.pkgJsons
-      .map(p => p.name)
-      .filter(name => globs.some(glob => minimatch(name, glob)))
-
     // if changedSince is defined, filter the packages to contain only changed packages (according to git)
     if (this.opts.changedSince) {
       return getChangedFilesForRoots([this.opts.workspacePath], {
@@ -326,12 +324,25 @@ export class RunGraph {
 
         return filterChangedPackages([...data.changedFiles], this.pkgPaths, this.opts.workspacePath)
       })
+    } else {
+      let pkgs = this.pkgJsons
+        .map(p => p.name)
+        .filter(name => globs.some(glob => minimatch(name, glob)))
+      return Promise.resolve(pkgs)
     }
-    return Promise.resolve(pkgs)
+  }
+
+  addRevDeps = (pkgs: string[]) => {
+    if (this.opts.revDeps) {
+      return expandRevDeps(pkgs, this.pkgJsons)
+    } else {
+      return pkgs
+    }
   }
 
   async run(cmd: string[], globs: string[] = ['**/*']) {
     let pkgs = await this.expandGlobs(globs)
+    pkgs = this.addRevDeps(pkgs)
     this.runList = new Set(pkgs)
     return (
       Bromise.all(pkgs.map(pkg => this.lookupOrRun(cmd, pkg)))

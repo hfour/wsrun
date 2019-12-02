@@ -70,6 +70,12 @@ let yargsParser = yargs
       nargs: 1,
       describe:
         'Runs commands in packages that have changed since the provided source control branch.'
+    },
+    revDeps: {
+      type: 'string',
+      nargs: 1,
+      describe:
+        'Include all dependents of the filtered packages. Runs after resolving the other package options.'
     }
   })
   .group(
@@ -219,6 +225,7 @@ let runner = new RunGraph(
     recursive: argv.recursive,
     doneCriteria: argv.doneCriteria,
     changedSince: argv.changedSince,
+    revDeps: argv.revDeps,
     exclude,
     excludeMissing: argv.excludeMissing,
     showReport: argv.report,
