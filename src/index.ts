@@ -72,8 +72,8 @@ let yargsParser = yargs
         'Runs commands in packages that have changed since the provided source control branch.'
     },
     revDeps: {
-      type: 'string',
-      nargs: 1,
+      default: false,
+      boolean: true,
       describe:
         'Include all dependents of the filtered packages. Runs after resolving the other package options.'
     }
