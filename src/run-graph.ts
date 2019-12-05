@@ -3,7 +3,7 @@ import chalk from 'chalk'
 
 import { PkgJson, Dict } from './workspace'
 import { ResultSpecialValues, Result, ProcResolution } from './enums'
-import { uniq } from 'lodash'
+import { uniq, intersection } from 'lodash'
 import { CmdProcess } from './cmd-process'
 import minimatch = require('minimatch')
 import { fixPaths } from './fix-paths'
@@ -310,26 +310,37 @@ export class RunGraph {
     return pkgsInError.length > 0
   }
 
-  async expandGlobs(globs: string[]) {
+  filterByGlobs(pkgs: string[], globs: string[]) {
+    if (globs && globs.length > 0) {
+      pkgs = pkgs.filter(name => globs.some(glob => minimatch(name, glob)))
+    }
+
+    return Bromise.resolve(pkgs)
+  }
+
+  filterByChangedFiles(pkgs: string[]) {
     // if changedSince is defined, filter the packages to contain only changed packages (according to git)
     if (this.opts.changedSince) {
       return getChangedFilesForRoots([this.opts.workspacePath], {
         changedSince: this.opts.changedSince
-      }).then(data => {
-        if (!data.repos || (data.repos.git.size === 0 && data.repos.hg.size === 0)) {
-          throw new Error(
-            "The workspace is not a git/hg repo and it cannot work with 'changedSince'"
-          )
-        }
-
-        return filterChangedPackages([...data.changedFiles], this.pkgPaths, this.opts.workspacePath)
       })
-    } else {
-      let pkgs = this.pkgJsons
-        .map(p => p.name)
-        .filter(name => globs.some(glob => minimatch(name, glob)))
-      return Promise.resolve(pkgs)
+        .then(data => {
+          if (!data.repos || (data.repos.git.size === 0 && data.repos.hg.size === 0)) {
+            throw new Error(
+              "The workspace is not a git/hg repo and it cannot work with 'changedSince'"
+            )
+          }
+
+          return filterChangedPackages(
+            [...data.changedFiles],
+            this.pkgPaths,
+            this.opts.workspacePath
+          )
+        })
+        .then(changedPackages => intersection(pkgs, changedPackages))
     }
+
+    return Promise.resolve(pkgs)
   }
 
   addRevDeps = (pkgs: string[]) => {
@@ -341,8 +352,12 @@ export class RunGraph {
   }
 
   async run(cmd: string[], globs: string[] = ['**/*']) {
-    let pkgs = await this.expandGlobs(globs)
-    pkgs = this.addRevDeps(pkgs)
+    let pkgs: string[] = this.pkgJsons.map(p => p.name)
+
+    pkgs = await this.filterByGlobs(pkgs, globs).then(pkgs =>
+      this.filterByChangedFiles(pkgs).then(pkgs => this.addRevDeps(pkgs))
+    )
+
     this.runList = new Set(pkgs)
     return (
       Bromise.all(pkgs.map(pkg => this.lookupOrRun(cmd, pkg)))
