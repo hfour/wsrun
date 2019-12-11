@@ -40,7 +40,7 @@ export interface GraphOptions {
   recursive: boolean
   doneCriteria: string | undefined
   changedSince: string | undefined
-  revDeps: boolean
+  revRecursive: boolean
   workspacePath: string
   exclude: string[]
   excludeMissing: boolean
@@ -344,7 +344,7 @@ export class RunGraph {
   }
 
   addRevDeps = (pkgs: string[]) => {
-    if (this.opts.revDeps) {
+    if (this.opts.revRecursive) {
       return expandRevDeps(pkgs, this.pkgJsons)
     } else {
       return pkgs

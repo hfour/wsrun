@@ -71,7 +71,7 @@ let yargsParser = yargs
       describe:
         'Runs commands in packages that have changed since the provided source control branch.'
     },
-    revDeps: {
+    revRecursive: {
       default: false,
       boolean: true,
       describe:
@@ -225,7 +225,7 @@ let runner = new RunGraph(
     recursive: argv.recursive,
     doneCriteria: argv.doneCriteria,
     changedSince: argv.changedSince,
-    revDeps: argv.revDeps,
+    revRecursive: argv.revRecursive,
     exclude,
     excludeMissing: argv.excludeMissing,
     showReport: argv.report,

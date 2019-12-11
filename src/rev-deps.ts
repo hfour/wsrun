@@ -2,7 +2,7 @@ import { PkgJson } from './workspace'
 
 /**
  * For given list of packages, expand that list with all dependents on them
- * @param pkgs original list of packages
+ * @param pkgs original list of packages (to be filtered)
  * @param pkgJsons list of packages in the workspace
  */
 export const expandRevDeps = (pkgs: string[], pkgJsons: PkgJson[]) => {
