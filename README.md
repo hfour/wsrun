@@ -19,27 +19,31 @@ Package Options:
                    branch.                                                                     [string]
 
 Misc Options:
-  --fast-exit, e        If at least one script exits with code > 0, abort                     [boolean]
-  --collect-logs, l     Collect per-package output and print it at the end of each script     [boolean]
-  --no-prefix           Don't prefix output                                                   [boolean]
-  --rewrite-paths       Rewrite relative paths in the standard output, by prepending the
-                        <root_folder>/<package_name>.                                         [boolean]
-  --bin                 The program to pass the command to                   [string] [default: "yarn"]
-  --done-criteria       Consider a process "done" when an output line matches the specified RegExp
-  --exclude, x          Skip running the command for that package                              [string]
-  --exclude-missing, m  Skip packages which lack the specified command in the scripts section of their
-                        package.json                                                          [boolean]
-  --report              Show an execution report once the command has finished in each package[boolean]
-  --if                  Run main command only if this condition runs successfully
-  --ifDependency        Run main command only if packages dependencies passed the condition (not
-                        available in parallel mode)                                           [boolean]
+  --if                   Run main command only if this condition runs successfully
+  --ifDependency         Run main command only if packages dependencies passed the condition 
+                         (not available in parallel mode)                                     [boolean]
+  --fast-exit, -e        If at least one script exits with code > 0, abort                                                       [boolean]
+  --collect-logs, -l     Collect per-package output and print it at the end of each script    [boolean]
+  --no-prefix            Don't prefix output                                                  [boolean]
+  --rewrite-paths        Rewrite relative paths in the standard output, by prepending the 
+                         <root_folder>/<package_name>.                                        [boolean]
+  --bin                  The program to pass the command to                                    [string] 
+  --done-criteria        Consider a process "done" when an output line matches the specified RegExp
+  --exclude, -x          Skip running the command for that package                             [string]
+  --exclude-missing, -m  Skip packages which lack the specified command in the scripts section
+                         of their package.json                                                [boolean]
+  --report               Show an execution report once the command has finished in each 
+                         package                                                              [boolean]
 
 Other Options:
-  --help         Show help                                                                    [boolean]
-  --version      Show version number                                                          [boolean]
-  -c             Denotes the end of the package list and the beginning of the command. Can be used
-                 instead of "--"                                                              [boolean]
-  --concurrency, y  Maximum number of commands to be executed at once                          [number]
+  --help             Show help                                                                [boolean]
+  --version          Show version number                                                      [boolean]
+  -c                 Denotes the end of the package list and the beginning of the command. 
+                     Can be used instead of "--"                                              [boolean]
+  --revRecursive     Include all dependents of the filtered packages. Runs after resolving 
+                     the other package options.                                               [boolean]
+  --prefix           Prefix output with package name                                          [boolean]
+  --concurrency, -y  Maximum number of commands to be executed at once                         [number]
 
 ```
 
