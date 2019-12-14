@@ -290,6 +290,38 @@ describe('basic', () => {
         }
       )
     })
+
+    it('should cancel the foreground process if the background process fails', async () => {
+      await withScaffold(
+        {
+          packages: [
+            makePkg('p1', {}, "echo 'test -> p1.1' ; sleep 1 ; echo 'test -> p1.2'"),
+            makePkg('p2', {}, "echo 'test -> p2.1' ; exit 1")
+          ]
+        },
+        async () => {
+          let tst = await wsrun('--parallel --fast-exit --collect-logs dorun')
+          expect(tst.status).toBe(1)
+          expect(getTestOutput(tst.stdout)).toEqual(['p1.1', 'p2.1'])
+        }
+      )
+    })
+
+    it('should not output the background process if the foreground process fails', async () => {
+      await withScaffold(
+        {
+          packages: [
+            makePkg('p1', {}, "echo 'test -> p1.1' ; sleep 1 ; echo 'test -> p1.2' ; exit 1"),
+            makePkg('p2', {}, "echo 'test -> p2.1'")
+          ]
+        },
+        async () => {
+          let tst = await wsrun('--parallel --fast-exit --collect-logs dorun')
+          expect(tst.status).toBe(1)
+          expect(getTestOutput(tst.stdout)).toEqual(['p1.1', 'p1.2'])
+        }
+      )
+    })
   })
 
   describe('terminating', () => {

@@ -11,4 +11,4 @@ fi
 
 BASHCMD="$RUNCMD ${@:2}"
 echo '$' $BASHCMD
-exec bash -c "$BASHCMD"
+exec bash -c "trap 'kill \$\$' SIGINT ; $BASHCMD"

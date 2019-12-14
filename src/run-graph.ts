@@ -84,7 +84,7 @@ export class RunGraph {
     if (this.opts.fastExit) {
       if (this.opts.collectLogs) {
         this.children.forEach(c => {
-          if (c !== child && !this.consoles.active(c.console)) {
+          if (c !== child) {
             this.consoles.discard(c.console)
             c.stop()
           }

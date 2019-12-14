@@ -8,7 +8,6 @@ export interface IConsole {
 
 export interface ConsoleFactory {
   create(console: IConsole): IConsole
-  active(c: IConsole): boolean
   discard(c: IConsole): void
   done(c: IConsole): void
   flush(): Bromise<void>
@@ -71,10 +70,6 @@ export class SerializedConsole implements ConsoleFactory {
       this._list.push(c)
     }
     return c
-  }
-
-  active(c: IConsole) {
-    return c === this._active
   }
 
   discard(c: IConsole) {
