@@ -95,10 +95,10 @@ When `--skip-missing` is not used, you can pass a command that doesn't exist in 
 
 #### Conditional execution
 
-Conditional execution is supported with `--if` and `--if-dependency`
+Conditional execution is supported with `--if` and `--ifDependency`
 
 Examples
 
 `yarn wsrun --stages --if build-needed build` - for each package it will first try `yarn wsrun build-needed` and only if the exit code is zero (success) it will run `yarn wsrun build`
 
-`yarn wsrun --stages --if build-needed --if-dependency build` - it will run `build` for each package in stages, if either the package's own condition command was success, or any of the dependencies had a successful condition.
+`yarn wsrun --stages --if build-needed --ifDependency build` - it will run `build` for each package in stages, if either the package's own condition command was success, or any of the dependencies had a successful condition.
