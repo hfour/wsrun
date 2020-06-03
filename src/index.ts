@@ -170,7 +170,7 @@ function parsePositionally(yargs: yargs.Argv, cmd: string[]) {
   return result
 }
 
-const argv = parsePositionally(yargsParser, process.argv.slice(2)) // yargs.argv
+const argv = parsePositionally(yargsParser, process.argv.slice(2)) as any // yargs.argv
 
 let mode: string
 if (argv.stages) {
