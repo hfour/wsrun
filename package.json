@@ -3,6 +3,7 @@
   "version": "5.2.1",
   "description": "executes commands on packages in parallel, but is aware of the dependencies between them",
   "main": "./build/index.js",
+  "repository": "hfour/wsrun",
   "author": "hfour",
   "license": "MIT",
   "jest": {
