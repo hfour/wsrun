@@ -13,7 +13,7 @@ export const filterChangedPackages = (
 ) => {
   return Object.keys(pkgPaths).filter(pkg => {
     const pkgPath = pkgPaths[pkg]
-    const p = path.join(workspacePath, pkgPath)
+    const p = `${path.join(workspacePath, pkgPath)}${path.sep}`
 
     return files.some(f => f.startsWith(p))
   })
