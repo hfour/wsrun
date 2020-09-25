@@ -59,7 +59,6 @@ export class RunGraph {
   private resultMap = new Map<string, Result>()
   private throat: PromiseFnRunner = passThrough
   private consoles: ConsoleFactory
-  private prefixer = new Prefixer().prefixer
   pathRewriter = (pkgPath: string, line: string) => fixPaths(this.opts.workspacePath, pkgPath, line)
 
   constructor(
@@ -79,6 +78,18 @@ export class RunGraph {
 
     if (opts.collectLogs) this.consoles = new SerializedConsole(console)
     else this.consoles = new DefaultConsole()
+  }
+
+  private globalPrefixer = new Prefixer().prefixer
+  get prefixer() {
+    if (this.opts.addPrefix) {
+      if (this.opts.collectLogs) {
+        return new Prefixer().prefixer
+      } else {
+        return this.globalPrefixer
+      }
+    }
+    return undefined
   }
 
   closeAll() {
@@ -142,7 +153,7 @@ export class RunGraph {
       rejectOnNonZeroExit: false,
       silent: true,
       collectLogs: this.opts.collectLogs,
-      prefixer: this.opts.addPrefix ? this.prefixer : undefined,
+      prefixer: this.prefixer,
       doneCriteria: this.opts.doneCriteria,
       path: this.pkgPaths[pkg]
     })
@@ -194,7 +205,7 @@ export class RunGraph {
         const child = new CmdProcess(c, cmdLine, pkg, {
           rejectOnNonZeroExit: this.opts.fastExit,
           collectLogs: this.opts.collectLogs,
-          prefixer: this.opts.addPrefix ? this.prefixer : undefined,
+          prefixer: this.prefixer,
           pathRewriter: this.opts.rewritePaths ? this.pathRewriter : undefined,
           doneCriteria: this.opts.doneCriteria,
           path: this.pkgPaths[pkg]
