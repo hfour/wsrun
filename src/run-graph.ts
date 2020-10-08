@@ -84,7 +84,7 @@ export class RunGraph {
   /**
    * Creates or provides the global prefixer. This depends on the collect-logs flag which describes whether the processes should use a shared prefixer.
    */
-  get createOrProvidePrefixerForProcess() {
+  private createOrProvidePrefixerForProcess = () => {
     if (this.opts.addPrefix) {
       if (this.opts.collectLogs) {
         return new Prefixer().prefixer
@@ -156,7 +156,7 @@ export class RunGraph {
       rejectOnNonZeroExit: false,
       silent: true,
       collectLogs: this.opts.collectLogs,
-      prefixer: this.createOrProvidePrefixerForProcess,
+      prefixer: this.createOrProvidePrefixerForProcess(),
       doneCriteria: this.opts.doneCriteria,
       path: this.pkgPaths[pkg]
     })
@@ -208,7 +208,7 @@ export class RunGraph {
         const child = new CmdProcess(c, cmdLine, pkg, {
           rejectOnNonZeroExit: this.opts.fastExit,
           collectLogs: this.opts.collectLogs,
-          prefixer: this.createOrProvidePrefixerForProcess,
+          prefixer: this.createOrProvidePrefixerForProcess(),
           pathRewriter: this.opts.rewritePaths ? this.pathRewriter : undefined,
           doneCriteria: this.opts.doneCriteria,
           path: this.pkgPaths[pkg]
