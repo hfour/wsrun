@@ -156,7 +156,7 @@ export class RunGraph {
       rejectOnNonZeroExit: false,
       silent: true,
       collectLogs: this.opts.collectLogs,
-      prefixer: this.prefixer,
+      prefixer: this.createOrProvidePrefixerForProcess,
       doneCriteria: this.opts.doneCriteria,
       path: this.pkgPaths[pkg]
     })
@@ -208,7 +208,7 @@ export class RunGraph {
         const child = new CmdProcess(c, cmdLine, pkg, {
           rejectOnNonZeroExit: this.opts.fastExit,
           collectLogs: this.opts.collectLogs,
-          prefixer: this.prefixer,
+          prefixer: this.createOrProvidePrefixerForProcess,
           pathRewriter: this.opts.rewritePaths ? this.pathRewriter : undefined,
           doneCriteria: this.opts.doneCriteria,
           path: this.pkgPaths[pkg]
