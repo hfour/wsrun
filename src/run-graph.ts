@@ -81,7 +81,10 @@ export class RunGraph {
   }
 
   private globalPrefixer = new Prefixer().prefixer
-  get prefixer() {
+  /**
+   * Creates or provides the global prefixer. This depends on the collect-logs flag which describes whether the processes should use a shared prefixer.
+   */
+  get createOrProvidePrefixerForProcess() {
     if (this.opts.addPrefix) {
       if (this.opts.collectLogs) {
         return new Prefixer().prefixer
