@@ -14,6 +14,7 @@ export interface PkgJson {
   dependencies?: Dict<string>
   devDependencies?: Dict<string>
   scripts?: { [name: string]: string }
+  private?: boolean
 }
 
 export type Packages = Dict<{

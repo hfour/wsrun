@@ -27,6 +27,7 @@ export type PackageJson = {
   dependencies?: { [name: string]: string }
   devDependencies?: { [name: string]: string }
   scripts?: { [name: string]: string }
+  private?: boolean
 }
 
 let counter = process.env['JEST_WORKER_ID'] || '0'

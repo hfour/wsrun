@@ -168,6 +168,23 @@ describe('basic', () => {
     )
   })
 
+  it('should support no-private', async () => {
+    await withScaffold(
+      {
+        packages: [
+          echo.makePkg({ name: 'public', dependencies: {} }),
+          echo.makePkg({ name: 'private', dependencies: {}, private: true })
+        ]
+      },
+      async () => {
+        let tst = await wsrun('--serial --no-private doecho')
+        expect(tst.status).toBeFalsy()
+        let output = String(await echo.getOutput())
+        expect(output).toEqual('public\n')
+      }
+    )
+  })
+
   it('should not break with namespaced pkgs', async () => {
     await withScaffold(
       {

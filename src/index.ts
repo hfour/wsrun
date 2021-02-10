@@ -47,12 +47,18 @@ let yargsParser = yargs
       describe: 'Same as "stages" but with no parallelism at the stage level'
     }
   })
-  .group(['recursive', 'package', 'changedSince'], 'Package Options:')
+  .group(['recursive', 'package', 'changedSince', 'no-private'], 'Package Options:')
   .options({
     package: {
       alias: 'p',
       describe: 'Run only for packages matching this glob. Can be used multiple times.',
       type: 'array'
+    },
+    'no-private': {
+      alias: 'n',
+      describe: 'Run only for non-private packages.',
+      default: false,
+      boolean: true
     },
     c: {
       boolean: true,
@@ -63,7 +69,7 @@ let yargsParser = yargs
       alias: 'r',
       default: false,
       boolean: true,
-      describe: 'Execute the same script on all of its dependencies, too'
+      describe: 'Execute the same script on all of its dependencies, too.'
     },
     changedSince: {
       type: 'string',
@@ -211,7 +217,10 @@ const pkgPaths = _.mapValues(
   v => v.path
 )
 
-const pkgJsons = _.map(pkgs, pkg => pkg.json)
+let pkgJsons = _.map(pkgs, pkg => pkg.json)
+if (argv.noPrivate) {
+  pkgJsons = pkgJsons.filter(pkg => pkg.private !== true)
+}
 
 let runner = new RunGraph(
   pkgJsons,
