@@ -2,6 +2,14 @@
 
 Run npm scripts or custom commands in a yarn workspace
 
+### Install:
+
+At the root of your monorepo, run
+
+```
+yarn add -D wsrun -W
+```
+
 ### Usage:
 
 ```
